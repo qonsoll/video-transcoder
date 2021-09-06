@@ -1,0 +1,16 @@
+{
+  "rules": {
+    "translations": {
+      ".read": "true",
+      "$appName": {
+        "$lang": {
+          ".read": "true",
+          ".write": "auth.uid != null",
+          "$text":{
+            ".validate": "newData.isString()"
+          }
+        }
+      }
+    }
+  }
+}
