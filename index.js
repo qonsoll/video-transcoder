@@ -3,12 +3,6 @@ const express = require('express')
 const fileUpload = require('express-fileupload')
 const ffmpeg = require('fluent-ffmpeg')
 const fs = require('fs')
-const admin = require("firebase-admin");
-const serviceAccount = require("path/to/serviceAccountKey.json");
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
 const app = express()
 
 app.use(bodyParser.urlencoded({extended: false}))
@@ -20,6 +14,16 @@ app.use(fileUpload({
     tempFileDir: '/tmp/'
 }))
 
+const admin = require("firebase-admin");
+const serviceAccount = require("./qonsoll-video-transcoder-firebase-adminsdk-ntmhf-b688febd35.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  storageBucket: 'gs://qonsoll-video-transcoder.appspot.com'
+});
+
+const bucket = admin.storage().bucket()
+
 ffmpeg.setFfmpegPath('D:\\FFMPEG\\bin\\ffmpeg.exe')
 ffmpeg.setFfprobePath('D:\\FFMPEG\\bin')
 
@@ -30,7 +34,9 @@ app.get('/', (req,res) => {
 app.post('/convert', (req,res) => {
     const to = req.body.toFormat
     const file = req.files.file
-    let fileName = `output.${to}`;
+    const arr = file.name.split('.')
+    arr.pop()
+    const editedName = arr.join('')
     console.log('to:', to)
     console.log('file:', file)
 
@@ -43,14 +49,18 @@ app.post('/convert', (req,res) => {
     .withOutputFormat(to)
     .on("end", function (stdout, stderr) {
       console.log("Finished");
-      res.download(__dirname + fileName, function (err) {
-        if (err) throw err;
 
-        fs.unlink(__dirname + fileName, function (err) {
-          if (err) throw err;
-          console.log("File deleted");
-        });
-      });
+    //   videoRef.save(__dirname + fileName)
+        bucket.upload(`${editedName}.${to}`).then((result) => {const storageFile = bucket.file(`${editedName}.${to}`)})
+        res.sendStatus(200)
+    //   res.download(__dirname + fileName, function (err) {
+    //     if (err) throw err;
+    //     bucket.upload(__dirname + fileName)
+    //     fs.unlink(__dirname + fileName, function (err) {
+    //       if (err) throw err;
+    //       console.log("File deleted");
+    //     });
+    //   });
       fs.unlink("tmp/" + file.name, function (err) {
         if (err) throw err;
         console.log("File deleted");
@@ -63,7 +73,7 @@ app.post('/convert', (req,res) => {
         console.log("File deleted");
       });
     })
-    .saveToFile(__dirname + fileName);
+    .saveToFile(`${editedName}.${to}`)
 })
 
 app.listen(5000, () => {
