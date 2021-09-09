@@ -3,6 +3,12 @@ const express = require('express')
 const fileUpload = require('express-fileupload')
 const ffmpeg = require('fluent-ffmpeg')
 const fs = require('fs')
+const admin = require("firebase-admin");
+const serviceAccount = require("path/to/serviceAccountKey.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
 const app = express()
 
 app.use(bodyParser.urlencoded({extended: false}))
@@ -16,9 +22,6 @@ app.use(fileUpload({
 
 ffmpeg.setFfmpegPath('D:\\FFMPEG\\bin\\ffmpeg.exe')
 ffmpeg.setFfprobePath('D:\\FFMPEG\\bin')
-// ffmpeg.setFlvtoolPath('D:\\')
-
-// console.log(ffmpeg)
 
 app.get('/', (req,res) => {
     res.sendFile(__dirname + '/index.html')
