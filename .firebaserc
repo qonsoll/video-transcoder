@@ -1,7 +1,0 @@
-{
-  "projects": {
-    "default": "b2g-backend-app-dev",
-    "prod": "b2g-backend-app-prod",
-    "staging": "b2g-backend-app-dev"
-  }
-}
