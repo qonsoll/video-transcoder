@@ -1,0 +1,38 @@
+{
+  "name": "video-transcoder",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint .",
+    "start": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/qonsoll/video-transcoder.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/qonsoll/video-transcoder/issues"
+  },
+  "homepage": "https://github.com/qonsoll/video-transcoder#readme",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "express-fileupload": "^1.2.1",
+    "firebase-admin": "^9.11.1",
+    "fluent-ffmpeg": "^2.1.2",
+    "nodemon": "^2.0.12"
+  },
+  "devDependencies": {
+    "eslint": "^5.12.0",
+    "eslint-plugin-promise": "^4.0.1",
+    "firebase-functions-test": "^0.2.0",
+    "eslint-plugin-prettier": "^3.1.3",
+    "eslint-config-prettier": "^6.11.0",
+    "prettier": "^2.0.5"
+  }
+}
