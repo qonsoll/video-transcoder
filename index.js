@@ -4,10 +4,44 @@ const fileUpload = require('express-fileupload')
 const ffmpeg = require('fluent-ffmpeg')
 const fs = require('fs')
 const app = express()
+const cors = require('cors')
 
-app.use(bodyParser.urlencoded({ extended: false }))
+app.use((req, res, next) => {
+  // Website you wish to allow to connect
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Content-Type', 'application/json;charset=UTF-8')
 
-app.use(bodyParser.json())
+  // Request methods you wish to allow
+  res.setHeader(
+    'Access-Control-Allow-Methods',
+    'GET, POST, OPTIONS, PUT, PATCH, DELETE'
+  )
+
+  // Request headers you wish to allow
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'X-Requested-With,content-type',
+    'Content-type'
+  )
+
+  // Set to true if you need the website to include cookies in the requests sent
+  // to the API (e.g. in case you use sessions)
+  // res.setHeader("Access-Control-Allow-Credentials", true);
+
+  // Pass to next layer of middleware
+  next()
+})
+
+app.use(
+  express.urlencoded({
+    extended: false
+  })
+)
+
+// app.use(express.text());
+app.use(express.json())
+
+app.use(cors())
 
 app.use(
   fileUpload({
@@ -15,6 +49,8 @@ app.use(
     tempFileDir: '/tmp/'
   })
 )
+
+// app.use(bodyParser({ limit: '1gb' }))
 
 const admin = require('firebase-admin')
 const serviceAccount = require('./qonsoll-video-transcoder-firebase-adminsdk-ntmhf-b688febd35.json')
@@ -34,11 +70,8 @@ app.get('/', (req, res) => {
 })
 
 app.post('/convert', (req, res) => {
-  const to = req.body.toFormat
-  const file = req.files.file
-  const arr = file.name.split('.')
-  arr.pop()
-  const editedName = arr.join('')
+  const to = req.body.toFormat || 'mp4'
+  const file = req.files.data
 
   file.mv('tmp/' + file.name, (err) => {
     if (err) return res.sendStatus(500).send(err)
@@ -48,16 +81,16 @@ app.post('/convert', (req, res) => {
     .withOutputFormat(to)
     .on('end', (stdout, stderr) => {
       bucket
-        .upload(`${editedName}.${to}`)
+        .upload(`${file.name}.${to}`)
         .then(() => {
-          const storageFile = bucket.file(`${editedName}.${to}`)
+          const storageFile = bucket.file(`${file.name}.${to}`)
           return storageFile.getSignedUrl({
             action: 'read',
             expires: '03-09-2491'
           })
         })
         .then((result) => {
-          fs.unlink(`${editedName}.${to}`, (err) => {
+          fs.unlink(`${file.name}.${to}`, (err) => {
             if (err) throw err
           })
           return res.status(200).send({ link: result[0] })
@@ -82,7 +115,7 @@ app.post('/convert', (req, res) => {
         if (err) throw err
       })
     })
-    .saveToFile(`${editedName}.${to}`)
+    .saveToFile(`${file.name}.${to}`)
 })
 
 app.listen(5000, () => {
