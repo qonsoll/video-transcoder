@@ -118,6 +118,7 @@ app.post('/convert', (req, res) => {
     .saveToFile(`${file.name}.${to}`)
 })
 
-app.listen(8080, () => {
+const PORT = process.env.PORT || 8080
+app.listen(PORT, () => {
   console.log('App is running on port 5000')
 })
