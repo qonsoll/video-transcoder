@@ -62,8 +62,8 @@ admin.initializeApp({
 
 const bucket = admin.storage().bucket()
 
-ffmpeg.setFfmpegPath('D:\\FFMPEG\\bin\\ffmpeg.exe')
-ffmpeg.setFfprobePath('D:\\FFMPEG\\bin')
+ffmpeg.setFfmpegPath('/usr/bin/ffmpeg')
+ffmpeg.setFfprobePath('/usr/bin/ffprobe')
 
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html')
