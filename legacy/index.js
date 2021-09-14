@@ -64,7 +64,7 @@ app.use(
 // app.use(bodyParser({ limit: '1gb' }))
 
 const admin = require('firebase-admin')
-const serviceAccount = require('./qonsoll-video-transcoder-firebase-adminsdk-ntmhf-b688febd35.json')
+const serviceAccount = require('../qonsoll-video-transcoder-firebase-adminsdk-ntmhf-b688febd35.json')
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
