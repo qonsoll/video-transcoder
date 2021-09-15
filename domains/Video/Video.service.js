@@ -8,10 +8,10 @@ const admin = require('firebase-admin')
 
 class VideoService {
   constructor() {
-    // ffmpeg.setFfmpegPath('/usr/bin/ffmpeg')
-    // ffmpeg.setFfprobePath('/usr/bin/ffprobe')
-    ffmpeg.setFfmpegPath('D:\\FFMPEG\\bin\\ffmpeg.exe')
-    ffmpeg.setFfprobePath('D:\\FFMPEG\\bin')
+    ffmpeg.setFfmpegPath('/usr/bin/ffmpeg')
+    ffmpeg.setFfprobePath('/usr/bin/ffprobe')
+    // ffmpeg.setFfmpegPath('D:\\FFMPEG\\bin\\ffmpeg.exe')
+    // ffmpeg.setFfprobePath('D:\\FFMPEG\\bin')
     this.bucket = admin.storage().bucket()
   }
 
