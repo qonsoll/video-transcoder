@@ -2,9 +2,20 @@ const bodyParser = require('body-parser')
 const express = require('express')
 const fileUpload = require('express-fileupload')
 const ffmpeg = require('fluent-ffmpeg')
+const cors = require('cors')
 const fs = require('fs')
 const app = express()
-const cors = require('cors')
+const http = require('http').Server(app)
+const io = require('socket.io')(http, {
+  cors: {
+    origin: 'http://localhost:3000',
+    methods: ['GET', 'POST']
+  }
+})
+
+const PORT = process.env.PORT || 8080
+
+const CONNECTED_CLIENTS = {}
 
 app.use((req, res, next) => {
   // Website you wish to allow to connect
@@ -53,7 +64,7 @@ app.use(
 // app.use(bodyParser({ limit: '1gb' }))
 
 const admin = require('firebase-admin')
-const serviceAccount = require('./qonsoll-video-transcoder-firebase-adminsdk-ntmhf-b688febd35.json')
+const serviceAccount = require('../qonsoll-video-transcoder-firebase-adminsdk-ntmhf-b688febd35.json')
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -62,23 +73,52 @@ admin.initializeApp({
 
 const bucket = admin.storage().bucket()
 
-ffmpeg.setFfmpegPath('/usr/bin/ffmpeg')
-ffmpeg.setFfprobePath('/usr/bin/ffprobe')
+// ffmpeg.setFfmpegPath('/usr/bin/ffmpeg')
+// ffmpeg.setFfprobePath('/usr/bin/ffprobe')
+ffmpeg.setFfmpegPath('D:\\FFMPEG\\bin\\ffmpeg.exe')
+ffmpeg.setFfprobePath('D:\\FFMPEG\\bin')
 
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html')
 })
 
+// Socket Listener
+io.on('connection', (socket) => {
+  CONNECTED_CLIENTS[socket.id] = socket.id
+  console.log('connected', socket.id)
+
+  socket.on('disconnect', (reason) => {
+    delete CONNECTED_CLIENTS[socket.id]
+    console.log('disconnected', socket.id)
+  })
+})
+
 app.post('/convert', (req, res) => {
   const to = req.body.toFormat || 'mp4'
   const file = req.files.data
+  const socketId = req.body.socketId
+
+  res.sendStatus(200)
 
   file.mv('tmp/' + file.name, (err) => {
-    if (err) return res.sendStatus(500).send(err)
+    if (err) io.to(socketId).emit('error', err)
   })
 
+  console.log(socketId)
+  convertFile(file, to, socketId)
+})
+
+function convertFile(file, to, socketId) {
   ffmpeg('tmp/' + file.name)
     .withOutputFormat(to)
+    // .on('progress', (progress) => {
+    //   io.to(socketId).emit('percentage', progress.percent)
+    // })
+    .on('progress', (progress) => {
+      // console.log('Processing: ' + progress.percent + '% done')
+      console.log('progress object ', progress)
+      io.to(socketId).emit('percentage', progress.percent)
+    })
     .on('end', (stdout, stderr) => {
       bucket
         .upload(`${file.name}.${to}`)
@@ -91,11 +131,18 @@ app.post('/convert', (req, res) => {
         })
         .then((result) => {
           fs.unlink(`${file.name}.${to}`, (err) => {
-            if (err) throw err
+            if (err) {
+              console.log(err)
+              throw err
+            }
           })
-          return res.status(200).send({ link: result[0] })
+          io.to(socketId).emit('link', result[0])
+          return result[0]
         })
-        .catch((err) => res.status(500).send(err))
+        .catch((err) => {
+          console.log(err)
+          io.to(socketId).emit('error', err)
+        })
       // res.sendStatus(200)
       //   res.download(__dirname + fileName, function (err) {
       //     if (err) throw err;
@@ -106,7 +153,10 @@ app.post('/convert', (req, res) => {
       //     });
       //   });
       fs.unlink('tmp/' + file.name, (err) => {
-        if (err) throw err
+        if (err) {
+          console.log(err)
+          throw err
+        }
       })
     })
     .on('error', (err) => {
@@ -116,9 +166,8 @@ app.post('/convert', (req, res) => {
       })
     })
     .saveToFile(`${file.name}.${to}`)
-})
+}
 
-const PORT = process.env.PORT || 8080
-app.listen(PORT, () => {
-  console.log('App is running on port 5000')
+http.listen(PORT, () => {
+  console.log(`App is running on port ${PORT}`)
 })
