@@ -4,8 +4,9 @@ const VideoController = require('./Video.controller')
 const router = express.Router()
 const Controller = new VideoController()
 
-router.post('/convert', Controller.convert)
+router.post('/upload', Controller.upload)
 
+router.get('/convert/:id', Controller.convert)
 // TODO add validation middleware for endpoint function validation
 // i.e. 'joi'
 //

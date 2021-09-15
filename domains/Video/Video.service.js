@@ -1,7 +1,6 @@
 const ffmpeg = require('fluent-ffmpeg')
 const fs = require('fs')
 const admin = require('firebase-admin')
-const ConnectionInstance = require('../Connection/Connection.service')
 /**
  * This class helps to work with Atoms. Create, update, read, delete them
  * @module Video
@@ -16,27 +15,24 @@ class VideoService {
     this.bucket = admin.storage().bucket()
   }
 
-  convert(file, to = 'mp4', socketId) {
-    file.mv('../../uploadBuffer/' + file.name, (err) => {
-      if (err)
-        ConnectionInstance.emitPrivateMessage(socketId, 'error', err.message)
-      //   io.to(socketId).emit('error', err)
+  convert(file, to = 'mp4', response) {
+    file.mv('uploadBuffer/' + file.name, (err) => {
+      if (err) {
+        response.write(`event: error\ndata: ${err.message}\n\n`)
+        response.end()
+        throw err
+      }
     })
 
-    ffmpeg('../../uploadBuffer/' + file.name)
+    ffmpeg('uploadBuffer/' + file.name)
       .withOutputFormat(to)
       .on('progress', (progress) => {
-        console.log('progress object ', progress)
-        ConnectionInstance.emitPrivateMessage(
-          socketId,
-          'percentage',
-          progress.targetSize
-        )
-        // io.to(socketId).emit('percentage', progress.percent)
+        const percent = (progress.targetSize * 100) / (file.size / 1024)
+        response.write(`event: progress\ndata: ${percent}\n\n`)
       })
       .on('end', (stdout, stderr) => {
         this.bucket
-          .upload(`../../transcodedVideos/${file.name}.${to}`)
+          .upload(`transcodedVideos/${file.name}.${to}`)
           .then(() => {
             const storageFile = this.bucket.file(`${file.name}.${to}`)
             return storageFile.getSignedUrl({
@@ -45,39 +41,37 @@ class VideoService {
             })
           })
           .then((result) => {
-            fs.unlink(`${file.name}.${to}`, (err) => {
+            fs.unlink(`transcodedVideos/${file.name}.${to}`, (err) => {
               if (err) {
                 throw err
               }
             })
-            ConnectionInstance.emitPrivateMessage(socketId, 'link', result[0])
-            // io.to(socketId).emit('link', result[0])
+            response.write(`event: link\ndata: ${result[0]}\n\n`)
+            response.end()
             return result[0]
           })
           .catch((err) => {
-            console.log(err)
             throw err
           })
-        fs.unlink('../../uploadBuffer/' + file.name, (err) => {
+        fs.unlink('uploadBuffer/' + file.name, (err) => {
           if (err) {
-            console.log(err)
             throw err
           }
         })
       })
       .on('error', (err) => {
-        console.log('Error during processing ffmpeg file: ' + err.message)
-        ConnectionInstance.emitPrivateMessage(socketId, 'error', err.message)
-        // io.to(socketId).emit('error', err)
-        fs.unlink('../../uploadBuffer/' + file.name, (err) => {
+        response.write(`event: error\ndata: ${err.message}\n\n`)
+        response.end()
+        fs.unlink('uploadBuffer/' + file.name, (err) => {
           if (err)
             console.log(
               'Error during deleting temporary file on ffmpeg error: ',
               err
             )
+          throw err
         })
       })
-      .saveToFile(`../../transcodedVideos/${file.name}.${to}`)
+      .saveToFile(`transcodedVideos/${file.name}.${to}`)
   }
 }
 

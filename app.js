@@ -4,7 +4,6 @@ const cors = require('cors')
 const admin = require('firebase-admin')
 const serviceAccount = require('./qonsoll-video-transcoder-firebase-adminsdk-ntmhf-b688febd35.json')
 const { VideoRouter } = require('./domains/Video')
-const { ConnectionInstance } = require('./domains/Connection')
 
 const app = express()
 const http = require('http').Server(app)
@@ -18,7 +17,7 @@ admin.initializeApp({
 app.use((req, res, next) => {
   // Website you wish to allow to connect
   res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Content-Type', 'application/json;charset=UTF-8')
+  // res.setHeader('Content-Type', 'application/json;charset=UTF-8')
 
   // Request methods you wish to allow
   res.setHeader(
@@ -41,14 +40,6 @@ app.use((req, res, next) => {
   next()
 })
 
-app.use((req, res, next) => {
-  // Initializing Socket.IO server
-  ConnectionInstance.initializeConnection(http)
-
-  // Pass to next layer of middleware
-  next()
-})
-
 app.use(
   express.urlencoded({
     extended: false
@@ -63,7 +54,7 @@ app.use(cors())
 app.use(
   fileUpload({
     useTempFiles: true,
-    tempFileDir: '/tmp/'
+    tempFileDir: '/uploadBuffer/'
   })
 )
 
