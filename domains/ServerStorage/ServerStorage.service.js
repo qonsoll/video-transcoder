@@ -20,7 +20,7 @@ class ServerStorage {
 
   findItem(id) {
     const item = _.remove(this.storage, (it) => it.sessionId === id)
-    if (!item) throw Error("Your connection doesn't exist")
+    if (!item) return new Error("Your connection doesn't exist")
     return item[0]
   }
 
