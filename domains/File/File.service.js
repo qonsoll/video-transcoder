@@ -1,5 +1,6 @@
 const fs = require('fs')
 const admin = require('firebase-admin')
+const DEFAULT_BUCKET_URI = 'gs://qonsoll-video-transcoder.appspot.com'
 
 class FileService {
   constructor(file) {
@@ -19,7 +20,7 @@ class FileService {
       action: 'read',
       expires: '03-09-2491'
     })
-    return fileUrl[0]
+    return { link: fileUrl[0], gcsUri: `${DEFAULT_BUCKET_URI}/${fileName}` }
   }
 
   async deleteFileFromFolder(sourceFolderPath, fileName = this.file.name) {

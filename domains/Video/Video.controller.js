@@ -1,24 +1,21 @@
 const VideoService = require('./Video.service')
 const { FileService } = require('../File')
 const { StorageService } = require('../ServerStorage')
+const { v4: uuidv4 } = require('uuid')
 
 class VideoController {
   constructor() {}
 
   upload(req, res) {
-    const { toFormat, sessionId } = req.body
+    const { toFormat } = req.body
     const file = req.files.data
+    const sessionId = uuidv4()
+
     file.name = sessionId
     StorageService.addItem({ toFormat, sessionId, file })
 
-    res.sendStatus(200)
+    res.status(200).send({ data: sessionId })
   }
-
-  // extractAudion(req, res) {
-  //   const { toFormat, sessionId } = req.body
-  //   const file = req.files.data
-  //   file.name = sessionId
-  // }
 
   async convert(req, res) {
     res.writeHead(200, {
@@ -37,7 +34,7 @@ class VideoController {
       return
     }
 
-    const { toFormat, sessionId, file } = storageItem
+    const { toFormat, file } = storageItem
     const videoService = new VideoService()
     const fileService = new FileService(file)
     const UPLOAD_DIRECTORY = 'uploadBuffer/'
@@ -52,25 +49,31 @@ class VideoController {
           res.write(`event: progress\ndata: ${percent}\n\n`)
         })
         .on('end', async (stdout, stderr) => {
-          const link = await fileService.uploadFileToStorage(
+          const link = (
+            await fileService.uploadFileToStorage(
+              RESULT_DIRECTORY,
+              `${file.name}.${toFormat}`
+            )
+          ).link
+          res.write(`event: link\ndata: ${link}\n\n`)
+          res.end()
+          await fileService.deleteFileFromFolder(UPLOAD_DIRECTORY)
+          await fileService.deleteFileFromFolder(
             RESULT_DIRECTORY,
             `${file.name}.${toFormat}`
           )
-          res.write(`event: link\ndata: ${link}\n\n`)
-          res.end()
         })
         .on('error', async (err) => {
           res.write(`event: error\ndata: ${err.message}\n\n`)
           res.end()
+          await fileService.deleteFileFromFolder(UPLOAD_DIRECTORY)
+          await fileService.deleteFileFromFolder(
+            RESULT_DIRECTORY,
+            `${file.name}.${toFormat}`
+          )
         })
     } catch (err) {
       console.log(err)
-    } finally {
-      fileService.deleteFileFromFolder(UPLOAD_DIRECTORY)
-      fileService.deleteFileFromFolder(
-        RESULT_DIRECTORY,
-        `${file.name}.${toFormat}`
-      )
     }
     req.on('close', () => {
       res.end()

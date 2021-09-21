@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/qonsoll/video-transcoder#readme",
   "dependencies": {
+    "@google-cloud/speech": "^4.8.1",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
@@ -27,7 +28,8 @@
     "fluent-ffmpeg": "^2.1.2",
     "lodash": "^4.17.21",
     "nodemon": "^2.0.12",
-    "socket.io": "^4.2.0"
+    "socket.io": "^4.2.0",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "eslint": "^5.12.0",

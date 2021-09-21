@@ -8,10 +8,11 @@ const { VideoRouter } = require('./domains/Video')
 const app = express()
 const http = require('http').Server(app)
 const PORT = process.env.PORT || 8080
+const DEFAULT_BUCKET_URI = 'gs://qonsoll-video-transcoder.appspot.com'
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  storageBucket: 'gs://qonsoll-video-transcoder.appspot.com'
+  storageBucket: DEFAULT_BUCKET_URI
 })
 
 app.use((req, res, next) => {
