@@ -1,10 +1,15 @@
 const ffmpeg = require('fluent-ffmpeg')
 /**
- * This class helps to work with Atoms. Create, update, read, delete them
+ * This class helps to work with video. Convert to another format, extract audio from video
  * @module Video
  */
 
 class VideoService {
+  /**
+   * VideoService constructor doesn't require any params to be initialized
+   *
+   * @constructor
+   */
   constructor() {
     // ffmpeg.setFfmpegPath('/usr/bin/ffmpeg')
     // ffmpeg.setFfprobePath('/usr/bin/ffprobe')
@@ -12,6 +17,18 @@ class VideoService {
     ffmpeg.setFfprobePath('D:\\FFMPEG\\bin')
   }
 
+  /**
+   * This function converts video to another format and saves formatted video into local folder
+   *
+   * @method
+   * @param {string} sourceFolderPath - path where video that will be converted is stored
+   * @param {string} processedFolderPath - path where to save converted video
+   * @param {Blob} file - file Blob object that will be converted
+   * @param {string} to - string that represents to which format video should be converted (mp4 by default)
+   * @param {string} outputOptions - some options that should be used during converting, for example:
+   * choose subtitles file to add to video
+   * @returns {ffmpeg.FfmpegCommand} result of ffmpeg command
+   */
   convert(
     sourceFolderPath,
     processedFolderPath,
@@ -19,6 +36,8 @@ class VideoService {
     to = 'mp4',
     outputOptions
   ) {
+    // outputOptions is unnecessary param so if we have it - we run ffmpeg command with it
+    // otherwise we run ffmpeg without it
     return outputOptions
       ? ffmpeg(`${sourceFolderPath}${file.name}`)
           .withOutputFormat(to)
@@ -29,6 +48,14 @@ class VideoService {
           .saveToFile(`${processedFolderPath}${file.name}.${to}`)
   }
 
+  /**
+   * This function extract audio from video file and saves new audio file into local folder
+   *
+   * @param {string} sourceFolderPath - path to folder where video is stored
+   * @param {string} processedFolderPath - path where to save extracted audio file
+   * @param {Blob} file - video file Blob object which audio will be extracted from
+   * @returns {ffmpeg.FfmpegCommand} result of ffmpeg command
+   */
   getAudio(sourceFolderPath, processedFolderPath, file) {
     return ffmpeg(`${sourceFolderPath}${file.name}`)
       .outputOptions([
