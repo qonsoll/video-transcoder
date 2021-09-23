@@ -12,6 +12,8 @@ class FileService {
   /**
    * FileService should be initialized with file Blob object
    * Constructor also initializes cloud bucket instance where we can upload files
+   *
+   * @constructor
    * @param {Blob} file - file Blob that we will work with
    */
   constructor(file) {
