@@ -27,6 +27,7 @@
     "express-fileupload": "^1.2.1",
     "firebase-admin": "^9.11.1",
     "fluent-ffmpeg": "^2.1.2",
+    "joi": "^17.4.2",
     "lodash": "^4.17.21",
     "nodemon": "^2.0.12",
     "socket.io": "^4.2.0",

@@ -1,19 +1,21 @@
 const express = require('express')
 const VideoController = require('./Video.controller')
+const validate = require('../../middlewares/validate')
+const Validation = require('./Video.validation')
 
 const router = express.Router()
 const Controller = new VideoController()
 
-router.post('/upload', Controller.upload)
+router
+  .route('/upload')
+  .post(validate(Validation.uploadVideo), Controller.upload)
 
-router.get('/convert/:id', Controller.convert)
+router
+  .route('/convert/:id')
+  .get(validate(Validation.convertVideo), Controller.convert)
 
-router.get('/createSubtitles/:id', Controller.addSubtitles)
-// TODO add validation middleware for endpoint function validation
-// i.e. 'joi'
-//
-// router
-//   .route("/convert")
-//   .post(validate(Validation.convertVideo), Controller.convert)
+router
+  .route('/createSubtitles/:id')
+  .get(validate(Validation.addSubtitles), Controller.addSubtitles)
 
 module.exports = router
