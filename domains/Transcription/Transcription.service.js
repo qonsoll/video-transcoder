@@ -3,7 +3,23 @@ const _ = require('lodash')
 const speech = require('@google-cloud/speech')
 const fs = require('fs')
 
+/**
+ * This class helps to make API calls to Google Speech-To-Text API,
+ * process result of API call to make subtitles and write result to subtitle file
+ * @module Transcription
+ */
+
 class TranscriptionService {
+  /**
+   * TranscriptionService constructor requires audioURI, encoding,
+   * rateHertz and languageCode
+   *
+   * @constructor
+   * @param {string} audioUri - cloud storage URI of audio file that will be processed
+   * @param {string} encoding - encoding of audio file (LINEAR16 by default)
+   * @param {number} rateHertz - hertz rate of audio file (16k by default)
+   * @param {string} languageCode - language code of speech that will be processed (en-US by default)
+   */
   constructor(audioUri, encoding, rateHertz, languageCode) {
     this.speechClient = new speech.SpeechClient()
     // Audio object for API request
@@ -21,6 +37,14 @@ class TranscriptionService {
     this.request = { audio, config }
   }
 
+  /**
+   * This method is used to recognize speech from audio
+   * that last longer that 1 minute
+   *
+   * @async
+   * @function longRunningSpeechRecognize
+   * @returns {Promise} Promise that contains array of results of speech recognition
+   */
   async longRunningSpeechRecognize() {
     // Recognizing process initialization
     const [data] = await this.speechClient.longRunningRecognize(this.request)
@@ -30,6 +54,14 @@ class TranscriptionService {
     return operation.results
   }
 
+  /**
+   * This method is used to recognize speech from audio
+   * that last less that 1 minute
+   *
+   * @async
+   * @function shortVideoSpeechRecognize
+   * @returns {Promise<Array<object>>} Promise that contains array of results of speech recognition
+   */
   async shortVideoSpeechRecognize() {
     // Recognizing process initialization
     const [data] = await this.speechClient.recognize(this.request)
@@ -37,17 +69,21 @@ class TranscriptionService {
     return data.results
   }
 
+  /**
+   * This function gets words and time-codes from speech-recognition results
+   * and builds strings in appropriate for subtitles file format
+   * then writes these strings into subtitles file
+   *
+   * @function
+   * @param {Array<object>} results - array of objects that contains recognized words and time-codes
+   * @param {string} fileName - name of subtitles file
+   */
   createSubtitlesFile(results, fileName) {
-    // let VTT = ''
     let counter = 0
-    // let phraseCounter = 0
     let startTime = '00:00:00,000'
     let endTime = '00:00:00,000'
     let phrase = ''
     let phraseLength = 10
-
-    // Writing start of WebVTT file
-    // this.appendDataToSubtitlesFile(`transcriptions/${fileName}`, 'WEBVTT\n\n')
 
     for (var i = 0; i < results.length; i++) {
       //loop through each word in each transcript
@@ -80,12 +116,8 @@ class TranscriptionService {
           //end of entry
           phrase = phrase.concat(' ', word)
           endTime = this.secondsToFormat(end)
-          // console.log(counter)
-          // console.log(startTime + ' --> ' + endTime)
-          // console.log(word)
-          // console.log('phrase: ', phrase)
-          // console.log('\n')
-          // write phrase
+
+          // write phrase to subtitles file
           this.appendDataToSubtitlesFile(
             `transcriptions/${fileName}`,
             `${Math.ceil(
@@ -98,20 +130,37 @@ class TranscriptionService {
     }
   }
 
+  /**
+   * This function parses time-code to match format that is required for subtitles file
+   *
+   * @method
+   * @param {string} seconds - string that should be parsed into appropriate for subtitles file format
+   * @returns {string} string that represents formatted time-code
+   */
   secondsToFormat(seconds) {
+    // Calculating hours from seconds
     let timeHours = Math.floor(seconds / 3600)
       .toString()
       .padStart(2, '0')
-    let timeMinutes = Math.floor(seconds / 60)
+    // Calculating minutes from leftover seconds
+    let timeMinutes = (Math.floor(seconds / 60) % 60)
       .toString()
       .padStart(2, '0')
+    // Calculating leftover seconds
     let timeSeconds = (seconds % 60).toString().padStart(2, '0')
 
+    // Building string in an appropriate format
     let formattedTime =
       timeHours + ':' + timeMinutes + ':' + timeSeconds + ',000'
     return formattedTime
   }
 
+  /**
+   * This method is used to append content to subtitles file
+   *
+   * @param {string} filePath - path to subtitles file where content will be written
+   * @param {string} content - content that will be written into subtitles file
+   */
   appendDataToSubtitlesFile(filePath, content) {
     fs.appendFileSync(filePath, content, (err) => {
       if (err) {
