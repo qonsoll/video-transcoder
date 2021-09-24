@@ -1,7 +1,7 @@
 const express = require('express')
 const ApplicationController = require('./Application.controller')
 const ApplicationValidation = require('./Application.validation')
-const validate = require('../../middlewares/validate')
+const { validate } = require('../../middlewares')
 
 const router = express.Router()
 const Controller = new ApplicationController()

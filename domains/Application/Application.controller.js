@@ -5,7 +5,6 @@ class ApplicationController {
 
   async create(req, res) {
     const { name } = req.body
-    console.log(req.body)
     const applicationService = new ApplicationService()
     try {
       const appId = await applicationService.createApp(name)
