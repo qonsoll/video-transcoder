@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: Database/Database.service.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: Database/Database.service.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const admin = require('firebase-admin')
+const _ = require('lodash')
+
+/**
+ * This class helps to manage default actions with database: create, update and delete documents
+ * @module Database
+ */
+class DatabaseService {
+  /**
+   * Database service doesn't require any params to be initialized
+   *
+   * @constructor
+   */
+  constructor() {
+    this.database = admin.firestore()
+  }
+
+  /**
+   * This function helps to get reference to collection to build queries
+   *
+   * @method
+   * @param {string} path - name of collection that we want to get reference to
+   * @returns reference to collection
+   */
+  getCollectionRef(path) {
+    return this.database.firestore(path)
+  }
+
+  /**
+   * This function helps to get reference to document to build queries
+   *
+   * @method
+   * @param {string} path - name of collection where document is stored
+   * @param {string} docId - id of the document that we want to get reference to
+   * @returns reference to document
+   */
+  getDocumentRef(path, docId) {
+    return docId
+      ? this.database.collection(path).doc(docId)
+      : this.database.collection(path).doc()
+  }
+
+  /**
+   * This function helps to create new document in database
+   *
+   * @method
+   * @param {string} path - name of collection where we want to create document
+   * @param {object} data - data that document will contain
+   * @param {object} options - options that will be used to create document (i.e. withoutUndef - without undefined fields)
+   * @param {string} docId - id that we want our document to have to
+   * @returns {ThisType}
+   */
+  async createDocument(path, data, options, docId) {
+    const { withoutUndefOrNull = true } = options
+    const documentId = docId ? docId : this.getDocumentRef(path).id
+    const removeUndefOrNull = withoutUndefOrNull
+      ? _.omitBy(data, _.isNil)
+      : data
+    removeUndefOrNull.id = documentId
+    await this.database.collection(path).doc(documentId).set(removeUndefOrNull)
+    return this
+  }
+
+  /**
+   * This function helps to update document in database
+   *
+   * @method
+   * @param {string} path - name of collection where document is stored
+   * @param {object} data - data that we want to change of add
+   * @param {string} docId - id of the document that we want to update
+   * @param {object} options - options that will be used to create document (i.e. withoutUndef - without undefined fields)
+   * @returns {ThisType}
+   */
+  async updateDocument(path, data, docId, options) {
+    const { withoutUndefOrNull = true, merge = true } = options
+    const removeUndefOrNull = withoutUndefOrNull
+      ? _.omitBy(data, _.isNil)
+      : data
+    if (merge)
+      await getDocumentRef(path, docId).set(removeUndefOrNull, { merge })
+    else await getDocumentRef(path, docId).set(removeUndefOrNull)
+    return this
+  }
+
+  /**
+   * This function helps to delete document from database
+   *
+   * @method
+   * @param {string} path - name of collection where document is stored
+   * @param {string} id - id of the document that we want to delete
+   * @returns {ThisType}
+   */
+  async deleteDocument(path, id) {
+    await this.database.collection(path).doc(id).delete()
+    return this
+  }
+}
+
+module.exports = DatabaseService
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Application.html">Application</a></li><li><a href="module-Database.html">Database</a></li><li><a href="module-File.html">File</a></li><li><a href="module-ServerStorage.html">ServerStorage</a></li><li><a href="module-Transcription.html">Transcription</a></li><li><a href="module-Video.html">Video</a></li></ul><h3>Classes</h3><ul><li><a href="module-Application-ApplicationController.html">ApplicationController</a></li><li><a href="module-Application-ApplicationService.html">ApplicationService</a></li><li><a href="module-Database-DatabaseService.html">DatabaseService</a></li><li><a href="module-File-FileService.html">FileService</a></li><li><a href="module-ServerStorage-ServerStorage.html">ServerStorage</a></li><li><a href="module-Transcription-TranscriptionService.html">TranscriptionService</a></li><li><a href="module-Video-VideoController.html">VideoController</a></li><li><a href="module-Video-VideoService.html">VideoService</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Fri Sep 24 2021 18:25:21 GMT+0300 (GMT+03:00)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

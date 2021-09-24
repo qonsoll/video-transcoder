@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Home</title>
+    <title>JSDoc: Source: Application/Application.controller.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,32 +17,67 @@
 
 <div id="main">
 
-    <h1 class="page-title">Home</h1>
+    <h1 class="page-title">Source: Application/Application.controller.js</h1>
 
     
 
 
 
     
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const ApplicationService = require('./Application.service')
 
+/**
+ * This Controller helps to process requests to application domain of server.
+ * @module Application
+ */
+class ApplicationController {
+  /**
+   * ApplicationController could be initialized without attributes
+   *
+   * @constructor
+   */
+  constructor() {}
 
-    <h3> </h3>
+  /**
+   * This method helps to create new application
+   * @method
+   */
+  async create(req, res) {
+    const { name } = req.body
+    const applicationService = new ApplicationService()
+    try {
+      const appId = await applicationService.createApp(name)
+      res.status(200).send({ data: { message: 'created', appId: appId } })
+    } catch (err) {
+      console.timeLog(err)
+      res.status(400).send({ data: { message: 'error', error: err } })
+    }
+  }
 
+  /**
+   * This method helps to delete existing application
+   * @method
+   */
+  async delete(req, res) {
+    const appId = req.params.id
+    const applicationService = new ApplicationService()
+    try {
+      const deletedAppId = await applicationService.deleteApp(appId)
+      res
+        .status(200)
+        .send({ data: { message: 'deleted', appId: deletedAppId } })
+    } catch (err) {
+      res.status(400).send({ data: { message: 'error', error: err } })
+    }
+  }
+}
 
-
-
-
-
-
-
-
-
-    
-
-
-
-
-
+module.exports = ApplicationController
+</code></pre>
+        </article>
+    </section>
 
 
 
