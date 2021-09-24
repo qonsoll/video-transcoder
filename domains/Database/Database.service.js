@@ -16,14 +16,14 @@ class DatabaseService {
       : this.database.collection(path).doc()
   }
 
-  async createDocument(path, data, docId, options) {
+  async createDocument(path, data, options, docId) {
     const { withoutUndefOrNull = true } = options
     const documentId = docId ? docId : this.getDocumentRef(path).id
     const removeUndefOrNull = withoutUndefOrNull
       ? _.omitBy(data, _.isNil)
       : data
     removeUndefOrNull.id = documentId
-    await this.database.collection(path).doc(docId).set(removeUndefOrNull)
+    await this.database.collection(path).doc(documentId).set(removeUndefOrNull)
     return this
   }
 
