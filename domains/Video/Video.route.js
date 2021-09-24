@@ -1,10 +1,12 @@
 const express = require('express')
 const VideoController = require('./Video.controller')
-const validate = require('../../middlewares/validate')
+const { validate, appRestrictor } = require('../../middlewares')
 const Validation = require('./Video.validation')
 
 const router = express.Router()
 const Controller = new VideoController()
+
+router.use(appRestrictor)
 
 router
   .route('/upload')

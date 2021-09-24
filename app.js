@@ -3,7 +3,9 @@ const fileUpload = require('express-fileupload')
 const cors = require('cors')
 const admin = require('firebase-admin')
 const serviceAccount = require('./qonsoll-video-transcoder-firebase-adminsdk-ntmhf-b688febd35.json')
+
 const { VideoRouter } = require('./domains/Video')
+const { ApplicationRouter } = require('./domains/Application')
 
 const app = express()
 const http = require('http').Server(app)
@@ -60,6 +62,7 @@ app.use(
 )
 
 app.use('/video', VideoRouter)
+app.use('/application', ApplicationRouter)
 
 http.listen(PORT, () => {
   console.log(`App is running on port ${PORT}`)
