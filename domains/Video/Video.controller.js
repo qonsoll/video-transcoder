@@ -185,12 +185,13 @@ class VideoController {
     }
 
     // Initializing all necessary services and constants for this endpoint
-    const { toFormat, file } = storageItem
+    const { toFormat, file, appName, appId } = storageItem
     const videoService = new VideoService()
     const fileService = new FileService(file)
+    const dbService = new DatabaseService()
     const UPLOAD_DIRECTORY = 'uploadBuffer/'
     const RESULT_DIRECTORY = 'transcodedVideos/'
-    const SUBTITLES_OPTIONS = `-vf subtitles=./transcriptions/${file.name}.srt`
+    // const SUBTITLES_OPTIONS = `-vf subtitles=./transcriptions/${file.name}.srt`
 
     try {
       // Moving uploaded file to processing folder
@@ -209,9 +210,13 @@ class VideoController {
           // Upload audio file to cloud storage
           const audioFile = await fileService.uploadFileToStorage(
             RESULT_DIRECTORY,
-            `${file.name}.wav`
+            `${file.name}.wav`,
+            {
+              destination: `${appName}_${appId}/audios/${file.name}.wav`
+            }
           )
           // Deleting audio file from local folder
+          await fileService.deleteFileFromFolder(UPLOAD_DIRECTORY)
           await fileService.deleteFileFromFolder(
             RESULT_DIRECTORY,
             `${file.name}.wav`
@@ -228,36 +233,37 @@ class VideoController {
             transcription,
             `${file.name}.srt`
           )
-          // Convert video and add subtitles process
-          videoService
-            .convert(
-              UPLOAD_DIRECTORY,
-              RESULT_DIRECTORY,
-              file,
-              toFormat,
-              SUBTITLES_OPTIONS
+          // Uploading subtitles file to cloud storage
+          const subtitlesLink = (
+            await fileService.uploadFileToStorage(
+              'transcriptions/',
+              `${file.name}.srt`,
+              {
+                destination: `${appName}_${appId}/subtitles/${file.name}.srt`
+              }
             )
-            // On convert and subtitles addition process end
-            .on('end', async () => {
-              // Upload result file to cloud storage
-              const link = await fileService.uploadFileToStorage(
-                RESULT_DIRECTORY,
-                `${file.name}.${toFormat}`
-              )
-              // Sending video link to client and closing SSE channel
-              res.write(`event: link\ndata: ${link.link}\n\n`)
-              res.end()
-              // Deleting files from local folders
-              await fileService.deleteFileFromFolder(UPLOAD_DIRECTORY)
-              await fileService.deleteFileFromFolder(
-                'transcriptions/',
-                `${file.name}.srt`
-              )
-              await fileService.deleteFileFromFolder(
-                RESULT_DIRECTORY,
-                `${file.name}.${toFormat}`
-              )
-            })
+          ).link
+          // creating db document with subtitles metadata
+          await dbService.createDocument(
+            COLLECTIONS.SUBTITLES,
+            {
+              appId,
+              link: subtitlesLink,
+              filename: `${file.name}.srt`,
+              path: `${appName}_${appId}/subtitles/${file.name}.srt`
+            },
+            { withoutUndefOrNull: true }
+          )
+          // Sending file link and closing sse channel
+          res.write(`event: link\ndata: ${subtitlesLink}\n\n`)
+          res.end()
+          // Deleting unnecessary files
+          await fileService.deleteFileFromStorage(
+            `${appName}_${appId}/audios/${file.name}.wav`
+          )
+          await fileService.deleteFileFromFolder(
+            `transcriptions/${file.name}.srt`
+          )
         })
         // On error listener
         .on('error', async (err) => {

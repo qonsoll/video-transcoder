@@ -1,6 +1,7 @@
 const fs = require('fs')
 const admin = require('firebase-admin')
 const DEFAULT_BUCKET_URI = 'gs://qonsoll-video-transcoder.appspot.com'
+const _ = require('lodash')
 
 /**
  * This class helps to work with Files. Move to another folder, upload to cloud storage,
@@ -49,7 +50,13 @@ class FileService {
       action: 'read',
       expires: '03-09-2491'
     })
-    return { link: fileUrl[0], gcsUri: `${DEFAULT_BUCKET_URI}/${fileName}` }
+
+    return {
+      link: fileUrl[0],
+      gcsUri: options.destination
+        ? `${DEFAULT_BUCKET_URI}/${options.destination}`
+        : `${DEFAULT_BUCKET_URI}/${fileName}`
+    }
   }
 
   /**
