@@ -8,6 +8,8 @@ const Controller = new VideoController()
 
 router.use(appRestrictor)
 
+router.route('/').get(validate(Validation.getVideos), Controller.getVideos)
+
 router
   .route('/upload')
   .post(validate(Validation.uploadVideo), Controller.upload)

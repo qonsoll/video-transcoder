@@ -4,7 +4,7 @@ const { TranscriptionService } = require('../Transcription')
 const { StorageService } = require('../ServerStorage')
 const { v4: uuidv4 } = require('uuid')
 const { DatabaseService } = require('../Database')
-const { COLLECTIONS } = require('../../constants')
+const { COLLECTIONS, FOLDERS } = require('../../constants')
 
 /**
  * This Controller helps to process requests to video domain of server.
@@ -51,6 +51,20 @@ class VideoController {
     res.status(200).send({ data: sessionId })
   }
 
+  async getVideos(req, res) {
+    // appId - is required to be in request header
+    const appId = req.headers.appid
+    const dbService = new DatabaseService()
+
+    const dbQuery = await dbService
+      .getCollectionRef(COLLECTIONS.VIDEOS)
+      .where('appId', '==', appId)
+      .get()
+    const videoData = dbQuery.docs.map((item) => item.data())
+
+    res.status(200).send({ data: videoData })
+  }
+
   /**
    * This method helps to handle video converting requests
    * @method
@@ -81,16 +95,19 @@ class VideoController {
     const { toFormat, file, appName, appId } = storageItem
     const videoService = new VideoService()
     const fileService = new FileService(file)
-    const UPLOAD_DIRECTORY = 'uploadBuffer/'
-    const RESULT_DIRECTORY = 'transcodedVideos/'
     const dbService = new DatabaseService()
 
     try {
       // Moving uploaded file to processing folder
-      fileService.moveFileToAnotherFolder(UPLOAD_DIRECTORY)
+      fileService.moveFileToAnotherFolder(FOLDERS.UPLOAD_DIRECTORY)
       // Converting video using request data
       videoService
-        .convert(UPLOAD_DIRECTORY, RESULT_DIRECTORY, file, toFormat)
+        .convert(
+          FOLDERS.UPLOAD_DIRECTORY,
+          FOLDERS.RESULT_DIRECTORY,
+          file,
+          toFormat
+        )
         // On convert progress event listener
         .on('progress', (progress) => {
           const percent = (progress.targetSize * 100) / (file.size / 1024)
@@ -102,7 +119,7 @@ class VideoController {
           // Uploading converted video to cloud storage and getting link
           const link = (
             await fileService.uploadFileToStorage(
-              RESULT_DIRECTORY,
+              FOLDERS.RESULT_DIRECTORY,
               `${file.name}.${toFormat}`,
               {
                 destination: `${appName}_${appId}/videos/${file.name}.${toFormat}`
@@ -124,9 +141,9 @@ class VideoController {
           res.write(`event: link\ndata: ${link}\n\n`)
           res.end()
           // Deleting files from local folders
-          await fileService.deleteFileFromFolder(UPLOAD_DIRECTORY)
+          await fileService.deleteFileFromFolder(FOLDERS.UPLOAD_DIRECTORY)
           await fileService.deleteFileFromFolder(
-            RESULT_DIRECTORY,
+            FOLDERS.RESULT_DIRECTORY,
             `${file.name}.${toFormat}`
           )
         })
@@ -136,17 +153,17 @@ class VideoController {
           res.write(`event: error\ndata: ${err.message}\n\n`)
           res.end()
           // Deleting files from local folders
-          await fileService.deleteFileFromFolder(UPLOAD_DIRECTORY)
+          await fileService.deleteFileFromFolder(FOLDERS.UPLOAD_DIRECTORY)
           await fileService.deleteFileFromFolder(
-            RESULT_DIRECTORY,
+            FOLDERS.RESULT_DIRECTORY,
             `${file.name}.${toFormat}`
           )
         })
     } catch (err) {
       console.log(err)
-      await fileService.deleteFileFromFolder(UPLOAD_DIRECTORY)
+      await fileService.deleteFileFromFolder(FOLDERS.UPLOAD_DIRECTORY)
       await fileService.deleteFileFromFolder(
-        RESULT_DIRECTORY,
+        FOLDERS.RESULT_DIRECTORY,
         `${file.name}.${toFormat}`
       )
     }
@@ -189,16 +206,14 @@ class VideoController {
     const videoService = new VideoService()
     const fileService = new FileService(file)
     const dbService = new DatabaseService()
-    const UPLOAD_DIRECTORY = 'uploadBuffer/'
-    const RESULT_DIRECTORY = 'transcodedVideos/'
     // const SUBTITLES_OPTIONS = `-vf subtitles=./transcriptions/${file.name}.srt`
 
     try {
       // Moving uploaded file to processing folder
-      fileService.moveFileToAnotherFolder(UPLOAD_DIRECTORY)
+      fileService.moveFileToAnotherFolder(FOLDERS.UPLOAD_DIRECTORY)
       // Extracting audio from video file
       videoService
-        .getAudio(UPLOAD_DIRECTORY, RESULT_DIRECTORY, file)
+        .getAudio(FOLDERS.UPLOAD_DIRECTORY, FOLDERS.RESULT_DIRECTORY, file)
         // On convert progress event listener
         .on('progress', (progress) => {
           const percent = (progress.targetSize * 100) / (file.size / 1024)
@@ -209,16 +224,16 @@ class VideoController {
         .on('end', async (stdout, stderr) => {
           // Upload audio file to cloud storage
           const audioFile = await fileService.uploadFileToStorage(
-            RESULT_DIRECTORY,
+            FOLDERS.RESULT_DIRECTORY,
             `${file.name}.wav`,
             {
               destination: `${appName}_${appId}/audios/${file.name}.wav`
             }
           )
           // Deleting audio file from local folder
-          await fileService.deleteFileFromFolder(UPLOAD_DIRECTORY)
+          await fileService.deleteFileFromFolder(FOLDERS.UPLOAD_DIRECTORY)
           await fileService.deleteFileFromFolder(
-            RESULT_DIRECTORY,
+            FOLDERS.RESULT_DIRECTORY,
             `${file.name}.wav`
           )
           // Initialization of transcription service
@@ -236,7 +251,7 @@ class VideoController {
           // Uploading subtitles file to cloud storage
           const subtitlesLink = (
             await fileService.uploadFileToStorage(
-              'transcriptions/',
+              FOLDERS.TRANSCRIPTIONS_DIRECTORY,
               `${file.name}.srt`,
               {
                 destination: `${appName}_${appId}/subtitles/${file.name}.srt`
@@ -262,7 +277,7 @@ class VideoController {
             `${appName}_${appId}/audios/${file.name}.wav`
           )
           await fileService.deleteFileFromFolder(
-            `transcriptions/`,
+            FOLDERS.TRANSCRIPTIONS_DIRECTORY,
             `${file.name}.srt`
           )
         })
@@ -272,9 +287,9 @@ class VideoController {
           res.write(`event: error\ndata: ${err.message}\n\n`)
           res.end()
           // Deleting files from local folders
-          await fileService.deleteFileFromFolder(UPLOAD_DIRECTORY)
+          await fileService.deleteFileFromFolder(FOLDERS.UPLOAD_DIRECTORY)
           await fileService.deleteFileFromFolder(
-            RESULT_DIRECTORY,
+            FOLDERS.RESULT_DIRECTORY,
             `${file.name}.wav`
           )
         })
