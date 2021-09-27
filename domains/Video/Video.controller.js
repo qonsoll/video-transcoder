@@ -262,7 +262,8 @@ class VideoController {
             `${appName}_${appId}/audios/${file.name}.wav`
           )
           await fileService.deleteFileFromFolder(
-            `transcriptions/${file.name}.srt`
+            `transcriptions/`,
+            `${file.name}.srt`
           )
         })
         // On error listener

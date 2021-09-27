@@ -46,10 +46,12 @@ class FileService {
    */
   async uploadFileToStorage(sourceFolderPath, fileName, options = {}) {
     await this.bucket.upload(`${sourceFolderPath}${fileName}`, options)
-    const fileUrl = await this.bucket.file(`${fileName}`).getSignedUrl({
-      action: 'read',
-      expires: '03-09-2491'
-    })
+    const fileUrl = await this.bucket
+      .file(`${options.destination ? options.destination : fileName}`)
+      .getSignedUrl({
+        action: 'read',
+        expires: '03-09-2491'
+      })
 
     return {
       link: fileUrl[0],
