@@ -1,5 +1,5 @@
 const { DatabaseService } = require('../Database')
-const { COLLECTIONS } = require('./Application.constants')
+const { COLLECTIONS } = require('../../constants')
 const { v4: uuidv4 } = require('uuid')
 
 /**

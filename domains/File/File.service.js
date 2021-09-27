@@ -43,13 +43,24 @@ class FileService {
    * @returns {Promise} - Promise object that contains link to show video
    * and cloud URI to process video further with other services
    */
-  async uploadFileToStorage(sourceFolderPath, fileName) {
-    await this.bucket.upload(`${sourceFolderPath}${fileName}`)
+  async uploadFileToStorage(sourceFolderPath, fileName, options = {}) {
+    await this.bucket.upload(`${sourceFolderPath}${fileName}`, options)
     const fileUrl = await this.bucket.file(`${fileName}`).getSignedUrl({
       action: 'read',
       expires: '03-09-2491'
     })
     return { link: fileUrl[0], gcsUri: `${DEFAULT_BUCKET_URI}/${fileName}` }
+  }
+
+  /**
+   * This function helps to delete files from cloud storage
+   *
+   * @async
+   * @method
+   * @param {string} filePath - path to file in cloud storage
+   */
+  async deleteFileFromStorage(filePath) {
+    await this.bucket.file(filePath).delete()
   }
 
   /**

@@ -3,6 +3,8 @@ const { FileService } = require('../File')
 const { TranscriptionService } = require('../Transcription')
 const { StorageService } = require('../ServerStorage')
 const { v4: uuidv4 } = require('uuid')
+const { DatabaseService } = require('../Database')
+const { COLLECTIONS } = require('../../constants')
 
 /**
  * This Controller helps to process requests to video domain of server.
@@ -20,18 +22,30 @@ class VideoController {
    * This method helps to upload video to server
    * @method
    */
-  upload(req, res) {
+  async upload(req, res) {
     // toFormat - is required body field
     const { toFormat } = req.body
     // file - is required to be in request files array
     const file = req.files.data
+    // appId - is required to be in request header
+    const appId = req.headers.appid
+    const dbService = new DatabaseService()
+
+    const appData = (
+      await dbService.getDocumentRef(COLLECTIONS.APPLICATIONS, appId).get()
+    ).data()
     // Generate unique id for this request
     const sessionId = uuidv4()
-
     // Changing file name to fit session id
     file.name = sessionId
     // Adding request data to server storage to process it further
-    StorageService.addItem({ toFormat, sessionId, file })
+    StorageService.addItem({
+      toFormat,
+      file,
+      sessionId,
+      appName: appData.name,
+      appId: appData.id
+    })
 
     // Sending successful response
     res.status(200).send({ data: sessionId })
@@ -64,11 +78,12 @@ class VideoController {
     }
 
     // Initializing all necessary services and constants for this endpoint
-    const { toFormat, file } = storageItem
+    const { toFormat, file, appName, appId } = storageItem
     const videoService = new VideoService()
     const fileService = new FileService(file)
     const UPLOAD_DIRECTORY = 'uploadBuffer/'
     const RESULT_DIRECTORY = 'transcodedVideos/'
+    const dbService = new DatabaseService()
 
     try {
       // Moving uploaded file to processing folder
@@ -88,9 +103,23 @@ class VideoController {
           const link = (
             await fileService.uploadFileToStorage(
               RESULT_DIRECTORY,
-              `${file.name}.${toFormat}`
+              `${file.name}.${toFormat}`,
+              {
+                destination: `${appName}_${appId}/videos/${file.name}.${toFormat}`
+              }
             )
           ).link
+          // Adding metadata about video to database collection
+          await dbService.createDocument(
+            COLLECTIONS.VIDEOS,
+            {
+              appId,
+              link,
+              path: `${appName}_${appId}/videos/${file.name}.${toFormat}`,
+              filename: `${file.name}.${toFormat}`
+            },
+            { withoutUndefOrNull: true }
+          )
           // Sending video link to client and closing SSE channel
           res.write(`event: link\ndata: ${link}\n\n`)
           res.end()
@@ -115,6 +144,11 @@ class VideoController {
         })
     } catch (err) {
       console.log(err)
+      await fileService.deleteFileFromFolder(UPLOAD_DIRECTORY)
+      await fileService.deleteFileFromFolder(
+        RESULT_DIRECTORY,
+        `${file.name}.${toFormat}`
+      )
     }
     // Listener if client closes SSE connection channel manually
     req.on('close', () => {
