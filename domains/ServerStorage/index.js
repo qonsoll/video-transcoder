@@ -1,5 +1,5 @@
-const StorageService = require('./ServerStorage.service')
+const Storage = require('./ServerStorage.service')
 
 module.exports = {
-  StorageService
+  Storage
 }
