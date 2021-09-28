@@ -1,4 +1,5 @@
 const ffmpeg = require('fluent-ffmpeg')
+const { FOLDERS } = require('../../constants')
 /**
  * This class helps to work with video. Convert to another format, extract audio from video
  * @module Video
@@ -68,6 +69,14 @@ class VideoService {
         '-map_metadata -1'
       ])
       .saveToFile(`${processedFolderPath}${file.name}.wav`)
+  }
+
+  async clearTemporaryFiles(fileService, toFormat) {
+    await fileService.deleteFileFromFolder(FOLDERS.UPLOAD_DIRECTORY)
+    await fileService.deleteFileFromFolder(
+      FOLDERS.RESULT_DIRECTORY,
+      `${fileService.file.name}.${toFormat}`
+    )
   }
 }
 

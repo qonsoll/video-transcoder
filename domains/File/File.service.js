@@ -1,6 +1,7 @@
 const fs = require('fs')
 const admin = require('firebase-admin')
 const DEFAULT_BUCKET_URI = 'gs://qonsoll-video-transcoder.appspot.com'
+const _ = require('lodash')
 
 /**
  * This class helps to work with Files. Move to another folder, upload to cloud storage,
@@ -43,13 +44,32 @@ class FileService {
    * @returns {Promise} - Promise object that contains link to show video
    * and cloud URI to process video further with other services
    */
-  async uploadFileToStorage(sourceFolderPath, fileName) {
-    await this.bucket.upload(`${sourceFolderPath}${fileName}`)
-    const fileUrl = await this.bucket.file(`${fileName}`).getSignedUrl({
-      action: 'read',
-      expires: '03-09-2491'
-    })
-    return { link: fileUrl[0], gcsUri: `${DEFAULT_BUCKET_URI}/${fileName}` }
+  async uploadFileToStorage(sourceFolderPath, fileName, options = {}) {
+    await this.bucket.upload(`${sourceFolderPath}${fileName}`, options)
+    const fileUrl = await this.bucket
+      .file(`${options.destination ? options.destination : fileName}`)
+      .getSignedUrl({
+        action: 'read',
+        expires: '03-09-2491'
+      })
+
+    return {
+      link: fileUrl[0],
+      gcsUri: options.destination
+        ? `${DEFAULT_BUCKET_URI}/${options.destination}`
+        : `${DEFAULT_BUCKET_URI}/${fileName}`
+    }
+  }
+
+  /**
+   * This function helps to delete files from cloud storage
+   *
+   * @async
+   * @method
+   * @param {string} filePath - path to file in cloud storage
+   */
+  async deleteFileFromStorage(filePath) {
+    await this.bucket.file(filePath).delete()
   }
 
   /**

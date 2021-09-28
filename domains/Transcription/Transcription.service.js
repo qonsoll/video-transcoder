@@ -2,6 +2,7 @@ require('dotenv').config()
 const _ = require('lodash')
 const speech = require('@google-cloud/speech')
 const fs = require('fs')
+const { FOLDERS } = require('../../constants')
 
 /**
  * This class helps to make API calls to Google Speech-To-Text API,
@@ -119,7 +120,7 @@ class TranscriptionService {
 
           // write phrase to subtitles file
           this.appendDataToSubtitlesFile(
-            `transcriptions/${fileName}`,
+            `${FOLDERS.TRANSCRIPTIONS_DIRECTORY}${fileName}`,
             `${Math.ceil(
               counter / phraseLength
             )}\n${startTime} --> ${endTime}\n${phrase}\n\n`

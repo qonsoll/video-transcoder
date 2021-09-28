@@ -1,8 +1,10 @@
 const VideoService = require('./Video.service')
 const { FileService } = require('../File')
-const { TranscriptionService } = require('../Transcription')
-const { StorageService } = require('../ServerStorage')
+const { Storage } = require('../ServerStorage')
 const { v4: uuidv4 } = require('uuid')
+const { DatabaseService } = require('../Database')
+const { COLLECTIONS, FOLDERS } = require('../../constants')
+const Handlers = require('./handlers')
 
 /**
  * This Controller helps to process requests to video domain of server.
@@ -20,21 +22,47 @@ class VideoController {
    * This method helps to upload video to server
    * @method
    */
-  upload(req, res) {
+  async upload(req, res) {
     // toFormat - is required body field
     const { toFormat } = req.body
     // file - is required to be in request files array
     const file = req.files.data
+    // appId - is required to be in request header
+    const appId = req.headers.appid
+    const dbService = new DatabaseService()
+
+    const appData = (
+      await dbService.getDocumentRef(COLLECTIONS.APPLICATIONS, appId).get()
+    ).data()
     // Generate unique id for this request
     const sessionId = uuidv4()
-
     // Changing file name to fit session id
     file.name = sessionId
     // Adding request data to server storage to process it further
-    StorageService.addItem({ toFormat, sessionId, file })
+    Storage.addItem({
+      toFormat,
+      file,
+      sessionId,
+      appName: appData.name,
+      appId: appData.id
+    })
 
     // Sending successful response
     res.status(200).send({ data: sessionId })
+  }
+
+  async getVideos(req, res) {
+    // appId - is required to be in request header
+    const appId = req.headers.appid
+    const dbService = new DatabaseService()
+
+    const dbQuery = await dbService
+      .getCollectionRef(COLLECTIONS.VIDEOS)
+      .where('appId', '==', appId)
+      .get()
+    const videoData = dbQuery.docs.map((item) => item.data())
+
+    res.status(200).send({ data: videoData })
   }
 
   /**
@@ -53,7 +81,7 @@ class VideoController {
     const id = req.params.id
 
     // Extracting request data from storage for this session
-    const storageItem = StorageService.findItem(id)
+    const storageItem = Storage.findItem(id)
 
     // Catching error if there is no items in storage for this session
     // and closing SSE channel
@@ -64,18 +92,22 @@ class VideoController {
     }
 
     // Initializing all necessary services and constants for this endpoint
-    const { toFormat, file } = storageItem
+    const { toFormat, file, appName, appId } = storageItem
     const videoService = new VideoService()
     const fileService = new FileService(file)
-    const UPLOAD_DIRECTORY = 'uploadBuffer/'
-    const RESULT_DIRECTORY = 'transcodedVideos/'
+    const dbService = new DatabaseService()
 
     try {
       // Moving uploaded file to processing folder
-      fileService.moveFileToAnotherFolder(UPLOAD_DIRECTORY)
+      fileService.moveFileToAnotherFolder(FOLDERS.UPLOAD_DIRECTORY)
       // Converting video using request data
       videoService
-        .convert(UPLOAD_DIRECTORY, RESULT_DIRECTORY, file, toFormat)
+        .convert(
+          FOLDERS.UPLOAD_DIRECTORY,
+          FOLDERS.RESULT_DIRECTORY,
+          file,
+          toFormat
+        )
         // On convert progress event listener
         .on('progress', (progress) => {
           const percent = (progress.targetSize * 100) / (file.size / 1024)
@@ -83,38 +115,28 @@ class VideoController {
           res.write(`event: progress\ndata: ${percent}\n\n`)
         })
         // On convert process end
-        .on('end', async (stdout, stderr) => {
-          // Uploading converted video to cloud storage and getting link
-          const link = (
-            await fileService.uploadFileToStorage(
-              RESULT_DIRECTORY,
-              `${file.name}.${toFormat}`
-            )
-          ).link
-          // Sending video link to client and closing SSE channel
-          res.write(`event: link\ndata: ${link}\n\n`)
-          res.end()
-          // Deleting files from local folders
-          await fileService.deleteFileFromFolder(UPLOAD_DIRECTORY)
-          await fileService.deleteFileFromFolder(
-            RESULT_DIRECTORY,
-            `${file.name}.${toFormat}`
+        .on(
+          'end',
+          Handlers.onConvertEndHandler(
+            res,
+            fileService,
+            dbService,
+            appName,
+            appId,
+            toFormat
           )
-        })
+        )
         // On error event listener
         .on('error', async (err) => {
           // Send client information that error occurred and close SSE channel
           res.write(`event: error\ndata: ${err.message}\n\n`)
           res.end()
           // Deleting files from local folders
-          await fileService.deleteFileFromFolder(UPLOAD_DIRECTORY)
-          await fileService.deleteFileFromFolder(
-            RESULT_DIRECTORY,
-            `${file.name}.${toFormat}`
-          )
+          await videoService.clearTemporaryFiles(fileService, toFormat)
         })
     } catch (err) {
       console.log(err)
+      await videoService.clearTemporaryFiles(fileService, toFormat)
     }
     // Listener if client closes SSE connection channel manually
     req.on('close', () => {
@@ -140,7 +162,7 @@ class VideoController {
     const id = req.params.id
 
     // Extracting request data from storage for this session
-    const storageItem = StorageService.findItem(id)
+    const storageItem = Storage.findItem(id)
 
     // Catching error if there is no items in storage for this session
     // and closing SSE channel
@@ -151,19 +173,17 @@ class VideoController {
     }
 
     // Initializing all necessary services and constants for this endpoint
-    const { toFormat, file } = storageItem
+    const { toFormat, file, appName, appId } = storageItem
     const videoService = new VideoService()
     const fileService = new FileService(file)
-    const UPLOAD_DIRECTORY = 'uploadBuffer/'
-    const RESULT_DIRECTORY = 'transcodedVideos/'
-    const SUBTITLES_OPTIONS = `-vf subtitles=./transcriptions/${file.name}.srt`
+    const dbService = new DatabaseService()
 
     try {
       // Moving uploaded file to processing folder
-      fileService.moveFileToAnotherFolder(UPLOAD_DIRECTORY)
+      fileService.moveFileToAnotherFolder(FOLDERS.UPLOAD_DIRECTORY)
       // Extracting audio from video file
       videoService
-        .getAudio(UPLOAD_DIRECTORY, RESULT_DIRECTORY, file)
+        .getAudio(FOLDERS.UPLOAD_DIRECTORY, FOLDERS.RESULT_DIRECTORY, file)
         // On convert progress event listener
         .on('progress', (progress) => {
           const percent = (progress.targetSize * 100) / (file.size / 1024)
@@ -171,71 +191,23 @@ class VideoController {
           res.write(`event: progress\ndata: ${percent}\n\n`)
         })
         // On audio extraction process end
-        .on('end', async (stdout, stderr) => {
-          // Upload audio file to cloud storage
-          const audioFile = await fileService.uploadFileToStorage(
-            RESULT_DIRECTORY,
-            `${file.name}.wav`
+        .on(
+          'end',
+          Handlers.onSubtitlesCreationEndHandler(
+            res,
+            fileService,
+            dbService,
+            appName,
+            appId
           )
-          // Deleting audio file from local folder
-          await fileService.deleteFileFromFolder(
-            RESULT_DIRECTORY,
-            `${file.name}.wav`
-          )
-          // Initialization of transcription service
-          const transcriptionService = new TranscriptionService(
-            audioFile.gcsUri
-          )
-          // Speech-to-text API call
-          const transcription =
-            await transcriptionService.shortVideoSpeechRecognize()
-          // Creation of subtitles from API-call result
-          transcriptionService.createSubtitlesFile(
-            transcription,
-            `${file.name}.srt`
-          )
-          // Convert video and add subtitles process
-          videoService
-            .convert(
-              UPLOAD_DIRECTORY,
-              RESULT_DIRECTORY,
-              file,
-              toFormat,
-              SUBTITLES_OPTIONS
-            )
-            // On convert and subtitles addition process end
-            .on('end', async () => {
-              // Upload result file to cloud storage
-              const link = await fileService.uploadFileToStorage(
-                RESULT_DIRECTORY,
-                `${file.name}.${toFormat}`
-              )
-              // Sending video link to client and closing SSE channel
-              res.write(`event: link\ndata: ${link.link}\n\n`)
-              res.end()
-              // Deleting files from local folders
-              await fileService.deleteFileFromFolder(UPLOAD_DIRECTORY)
-              await fileService.deleteFileFromFolder(
-                'transcriptions/',
-                `${file.name}.srt`
-              )
-              await fileService.deleteFileFromFolder(
-                RESULT_DIRECTORY,
-                `${file.name}.${toFormat}`
-              )
-            })
-        })
+        )
         // On error listener
         .on('error', async (err) => {
           // Sending info to user that error occurred and closing SSE channel
           res.write(`event: error\ndata: ${err.message}\n\n`)
           res.end()
           // Deleting files from local folders
-          await fileService.deleteFileFromFolder(UPLOAD_DIRECTORY)
-          await fileService.deleteFileFromFolder(
-            RESULT_DIRECTORY,
-            `${file.name}.wav`
-          )
+          await videoService.clearTemporaryFiles(fileService, 'wav')
         })
     } catch (err) {
       console.log(err)

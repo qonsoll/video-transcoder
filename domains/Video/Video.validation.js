@@ -1,5 +1,11 @@
 const Joi = require('joi')
 
+const getVideos = Joi.object({
+  headers: Joi.object().keys({
+    appid: Joi.string().required()
+  })
+})
+
 const uploadVideo = Joi.object({
   body: Joi.object().keys({
     toFormat: Joi.string().required()
@@ -24,5 +30,6 @@ const addSubtitles = Joi.object({
 module.exports = {
   uploadVideo,
   convertVideo,
-  addSubtitles
+  addSubtitles,
+  getVideos
 }

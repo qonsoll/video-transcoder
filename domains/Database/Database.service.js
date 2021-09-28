@@ -23,7 +23,7 @@ class DatabaseService {
    * @returns reference to collection
    */
   getCollectionRef(path) {
-    return this.database.firestore(path)
+    return this.database.collection(path)
   }
 
   /**

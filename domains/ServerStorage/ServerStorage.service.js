@@ -79,6 +79,6 @@ class ServerStorage {
 
 // Storage should be only one to the whole application
 // so we create instance right here and export this instance as singleton pattern class
-const StorageService = new ServerStorage()
+const Storage = new ServerStorage()
 
-module.exports = StorageService
+module.exports = Storage
