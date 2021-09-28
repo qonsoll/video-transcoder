@@ -1,7 +1,14 @@
 const { COLLECTIONS, FOLDERS } = require('../../../constants')
 const { TranscriptionService } = require('../../Transcription')
 
-module.exports = (response, fileService, dbService, appName, appId) => {
+module.exports = (
+  response,
+  fileService,
+  dbService,
+  appName,
+  appId,
+  videoId
+) => {
   return async (stdout, stderr) => {
     // Upload audio file to cloud storage
     const audioFile = await fileService.uploadFileToStorage(
@@ -40,6 +47,7 @@ module.exports = (response, fileService, dbService, appName, appId) => {
     await dbService.createDocument(
       COLLECTIONS.SUBTITLES,
       {
+        videoId,
         appId,
         link: subtitlesLink,
         filename: `${fileService.file.name}.srt`,

@@ -23,8 +23,8 @@ class VideoController {
    * @method
    */
   async upload(req, res) {
-    // toFormat - is required body field
-    const { toFormat } = req.body
+    // toFormat, withSubtitles - are required body fields
+    const { toFormat, withSubtitles } = req.body
     // file - is required to be in request files array
     const file = req.files.data
     // appId - is required to be in request header
@@ -43,6 +43,7 @@ class VideoController {
       toFormat,
       file,
       sessionId,
+      withSubtitles,
       appName: appData.name,
       appId: appData.id
     })
@@ -92,7 +93,7 @@ class VideoController {
     }
 
     // Initializing all necessary services and constants for this endpoint
-    const { toFormat, file, appName, appId } = storageItem
+    const { toFormat, file, appName, appId, withSubtitles } = storageItem
     const videoService = new VideoService()
     const fileService = new FileService(file)
     const dbService = new DatabaseService()
@@ -121,9 +122,8 @@ class VideoController {
             res,
             fileService,
             dbService,
-            appName,
-            appId,
-            toFormat
+            storageItem,
+            id
           )
         )
         // On error event listener
@@ -173,14 +173,14 @@ class VideoController {
     }
 
     // Initializing all necessary services and constants for this endpoint
-    const { toFormat, file, appName, appId } = storageItem
+    const { file, appName, appId, videoId } = storageItem
     const videoService = new VideoService()
     const fileService = new FileService(file)
     const dbService = new DatabaseService()
 
     try {
       // Moving uploaded file to processing folder
-      fileService.moveFileToAnotherFolder(FOLDERS.UPLOAD_DIRECTORY)
+      // fileService.moveFileToAnotherFolder(FOLDERS.UPLOAD_DIRECTORY)
       // Extracting audio from video file
       videoService
         .getAudio(FOLDERS.UPLOAD_DIRECTORY, FOLDERS.RESULT_DIRECTORY, file)
@@ -198,7 +198,8 @@ class VideoController {
             fileService,
             dbService,
             appName,
-            appId
+            appId,
+            videoId
           )
         )
         // On error listener

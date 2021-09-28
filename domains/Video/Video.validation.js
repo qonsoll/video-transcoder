@@ -8,7 +8,8 @@ const getVideos = Joi.object({
 
 const uploadVideo = Joi.object({
   body: Joi.object().keys({
-    toFormat: Joi.string().required()
+    toFormat: Joi.string().required(),
+    withSubtitles: Joi.bool().required()
   }),
   files: Joi.object().keys({
     data: Joi.object().required()
