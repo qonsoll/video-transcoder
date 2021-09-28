@@ -193,7 +193,7 @@ class VideoController {
         // On audio extraction process end
         .on(
           'end',
-          Handlers.onSubtitlesCreationEnd(
+          Handlers.onSubtitlesCreationEndHandler(
             res,
             fileService,
             dbService,

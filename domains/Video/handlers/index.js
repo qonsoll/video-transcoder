@@ -1,7 +1,7 @@
 const onConvertEndHandler = require('./onCovertEnd.handler')
-const onSubtitlesCreationEnd = require('./onSubtitlesCreationEnd.handler')
+const onSubtitlesCreationEndHandler = require('./onSubtitlesCreationEnd.handler')
 
 module.exports = {
   onConvertEndHandler,
-  onSubtitlesCreationEnd
+  onSubtitlesCreationEndHandler
 }
