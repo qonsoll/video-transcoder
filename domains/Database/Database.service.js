@@ -48,7 +48,7 @@ class DatabaseService {
    * @param {object} data - data that document will contain
    * @param {object} options - options that will be used to create document (i.e. withoutUndef - without undefined fields)
    * @param {string} docId - id that we want our document to have to
-   * @returns {ThisType}
+   * @returns {string} newly created document's id
    */
   async createDocument(path, data, options, docId) {
     const { withoutUndefOrNull = true } = options
@@ -58,7 +58,7 @@ class DatabaseService {
       : data
     removeUndefOrNull.id = documentId
     await this.database.collection(path).doc(documentId).set(removeUndefOrNull)
-    return this
+    return documentId
   }
 
   /**
@@ -69,7 +69,7 @@ class DatabaseService {
    * @param {object} data - data that we want to change of add
    * @param {string} docId - id of the document that we want to update
    * @param {object} options - options that will be used to create document (i.e. withoutUndef - without undefined fields)
-   * @returns {ThisType}
+   * @returns {string} updated document's id
    */
   async updateDocument(path, data, docId, options) {
     const { withoutUndefOrNull = true, merge = true } = options
@@ -79,7 +79,7 @@ class DatabaseService {
     if (merge)
       await getDocumentRef(path, docId).set(removeUndefOrNull, { merge })
     else await getDocumentRef(path, docId).set(removeUndefOrNull)
-    return this
+    return docId
   }
 
   /**
@@ -88,11 +88,11 @@ class DatabaseService {
    * @method
    * @param {string} path - name of collection where document is stored
    * @param {string} id - id of the document that we want to delete
-   * @returns {ThisType}
+   * @returns {string} deleted document's id
    */
   async deleteDocument(path, id) {
     await this.database.collection(path).doc(id).delete()
-    return this
+    return id
   }
 }
 
