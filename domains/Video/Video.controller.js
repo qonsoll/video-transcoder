@@ -24,7 +24,8 @@ class VideoController {
    */
   async upload(req, res) {
     // toFormat, withSubtitles - are required body fields
-    const { toFormat, withSubtitles } = req.body
+    const { toFormat, withSubtitles } = JSON.parse(req.body.uploadProps)
+    console.log(typeof withSubtitles)
     // file - is required to be in request files array
     const file = req.files.data
     // appId - is required to be in request header
@@ -57,13 +58,16 @@ class VideoController {
     const appId = req.headers.appid
     const dbService = new DatabaseService()
 
-    const dbQuery = await dbService
-      .getCollectionRef(COLLECTIONS.VIDEOS)
-      .where('appId', '==', appId)
-      .get()
-    const videoData = dbQuery.docs.map((item) => item.data())
-
-    res.status(200).send({ data: videoData })
+    try {
+      const dbQuery = await dbService
+        .getCollectionRef(COLLECTIONS.VIDEOS)
+        .where('appId', '==', appId)
+        .get()
+      const videoData = dbQuery.docs.map((item) => item.data())
+      res.status(200).send({ data: videoData })
+    } catch (err) {
+      res.status(404).send({ data: err.message })
+    }
   }
 
   /**
