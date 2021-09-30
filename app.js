@@ -17,7 +17,7 @@ admin.initializeApp({
   storageBucket: DEFAULT_BUCKET_URI
 })
 
-app.use((req, res, next) => {
+app.use(async (req, res, next) => {
   // Website you wish to allow to connect
   res.setHeader('Access-Control-Allow-Origin', '*')
   // res.setHeader('Content-Type', 'application/json;charset=UTF-8')
@@ -34,6 +34,18 @@ app.use((req, res, next) => {
     'X-Requested-With,content-type',
     'Content-type'
   )
+
+  // Cloud Storage CORS settings
+  await admin
+    .storage()
+    .bucket()
+    .setCorsConfiguration([
+      {
+        origin: ['*'],
+        method: ['GET'],
+        maxAgeSeconds: 3600
+      }
+    ])
 
   // Set to true if you need the website to include cookies in the requests sent
   // to the API (e.g. in case you use sessions)

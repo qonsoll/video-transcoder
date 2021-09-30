@@ -80,11 +80,17 @@ class TranscriptionService {
    * @param {string} fileName - name of subtitles file
    */
   createSubtitlesFile(results, fileName) {
-    let counter = 0
-    let startTime = '00:00:00,000'
-    let endTime = '00:00:00,000'
+    let counter = 1
+    let startTime = '00:00:00.000'
+    let endTime = '00:00:00.000'
     let phrase = ''
     let phraseLength = 10
+
+    // Start subtitles file
+    this.appendDataToSubtitlesFile(
+      `${FOLDERS.TRANSCRIPTIONS_DIRECTORY}${fileName}`,
+      'WEBVTT\n\n'
+    )
 
     for (var i = 0; i < results.length; i++) {
       //loop through each word in each transcript
@@ -121,9 +127,10 @@ class TranscriptionService {
           // write phrase to subtitles file
           this.appendDataToSubtitlesFile(
             `${FOLDERS.TRANSCRIPTIONS_DIRECTORY}${fileName}`,
-            `${Math.ceil(
-              counter / phraseLength
-            )}\n${startTime} --> ${endTime}\n${phrase}\n\n`
+            //             ${Math.ceil(
+            //   counter / phraseLength
+            // )}\n
+            `${startTime} --> ${endTime}\n${phrase}\n\n`
           )
         }
         counter++
@@ -152,7 +159,7 @@ class TranscriptionService {
 
     // Building string in an appropriate format
     let formattedTime =
-      timeHours + ':' + timeMinutes + ':' + timeSeconds + ',000'
+      timeHours + ':' + timeMinutes + ':' + timeSeconds + '.000'
     return formattedTime
   }
 
