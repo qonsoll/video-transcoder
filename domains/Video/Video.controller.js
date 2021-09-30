@@ -25,7 +25,6 @@ class VideoController {
   async upload(req, res) {
     // toFormat, withSubtitles - are required body fields
     const { toFormat, withSubtitles } = JSON.parse(req.body.uploadProps)
-    console.log(typeof withSubtitles)
     // file - is required to be in request files array
     const file = req.files.data
     // appId - is required to be in request header

@@ -31,15 +31,15 @@ module.exports = (
     // Creation of subtitles from API-call result
     transcriptionService.createSubtitlesFile(
       transcription,
-      `${fileService.file.name}.vtt.txt`
+      `${fileService.file.name}.vtt`
     )
     // Uploading subtitles file to cloud storage
     const subtitlesLink = (
       await fileService.uploadFileToStorage(
         FOLDERS.TRANSCRIPTIONS_DIRECTORY,
-        `${fileService.file.name}.vtt.txt`,
+        `${fileService.file.name}.vtt`,
         {
-          destination: `${appName}_${appId}/subtitles/${fileService.file.name}.vtt.txt`
+          destination: `${appName}_${appId}/subtitles/${fileService.file.name}.vtt`
         }
       )
     ).link
@@ -50,8 +50,8 @@ module.exports = (
         videoId,
         appId,
         link: subtitlesLink,
-        filename: `${fileService.file.name}.vtt.txt`,
-        path: `${appName}_${appId}/subtitles/${fileService.file.name}.vtt.txt`
+        filename: `${fileService.file.name}.vtt`,
+        path: `${appName}_${appId}/subtitles/${fileService.file.name}.vtt`
       },
       { withoutUndefOrNull: true }
     )
@@ -64,7 +64,7 @@ module.exports = (
     )
     await fileService.deleteFileFromFolder(
       FOLDERS.TRANSCRIPTIONS_DIRECTORY,
-      `${fileService.file.name}.vtt.txt`
+      `${fileService.file.name}.vtt`
     )
   }
 }

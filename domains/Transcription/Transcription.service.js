@@ -80,7 +80,7 @@ class TranscriptionService {
    * @param {string} fileName - name of subtitles file
    */
   createSubtitlesFile(results, fileName) {
-    let counter = 0
+    let counter = 1
     let startTime = '00:00:00.000'
     let endTime = '00:00:00.000'
     let phrase = ''
@@ -89,7 +89,7 @@ class TranscriptionService {
     // Start subtitles file
     this.appendDataToSubtitlesFile(
       `${FOLDERS.TRANSCRIPTIONS_DIRECTORY}${fileName}`,
-      'WEBVTT\n'
+      'WEBVTT\n\n'
     )
 
     for (var i = 0; i < results.length; i++) {

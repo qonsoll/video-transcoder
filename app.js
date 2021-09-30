@@ -36,7 +36,7 @@ app.use(async (req, res, next) => {
   )
 
   // Cloud Storage CORS settings
-  admin
+  await admin
     .storage()
     .bucket()
     .setCorsConfiguration([
