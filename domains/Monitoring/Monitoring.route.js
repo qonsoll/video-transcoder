@@ -7,3 +7,5 @@ const Controller = new MonitoringController()
 router.route('/health').get(Controller.health)
 
 router.route('/metrics').get(Controller.metrics)
+
+module.exports = router

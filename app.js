@@ -1,11 +1,13 @@
 const express = require('express')
 const fileUpload = require('express-fileupload')
 const cors = require('cors')
+const helmet = require('helmet')
 const admin = require('firebase-admin')
 const serviceAccount = require('./qonsoll-video-transcoder-firebase-adminsdk-ntmhf-b688febd35.json')
 
 const { VideoRouter } = require('./domains/Video')
 const { ApplicationRouter } = require('./domains/Application')
+const { MonitoringRouter } = require('./domains/Monitoring')
 
 const app = express()
 const http = require('http').Server(app)
@@ -73,6 +75,9 @@ app.use(
   })
 )
 
+app.use(helmet())
+
+app.use('/', MonitoringRouter)
 app.use('/video', VideoRouter)
 app.use('/application', ApplicationRouter)
 

@@ -7,18 +7,19 @@ const client = require('prom-client')
 
 class MonitoringService {
   /**
-   * MonitoringService could be initialized without any params
+   * MonitoringService should be initialized with Prometheus client Registry
    *
    * @constructor
+   * @param {client.Registry} promClient - Prometheus client Registry
    */
-  constructor() {
-    this.register = new client.Registry()
+  constructor(promClient) {
+    this.register = promClient
     client.collectDefaultMetrics({
       app: 'video-transcoder-monitoring',
       prefix: 'node_',
       timeout: 10000,
       gcDurationBuckets: [0.001, 0.01, 0.1, 1, 2, 5],
-      register
+      promClient
     })
     this.httpRequestTimer = this.createHistogram({
       name: 'http_request_duration_seconds',
@@ -50,6 +51,6 @@ class MonitoringService {
   }
 }
 
-const MonitoringInstance = new MonitoringService()
+const MonitoringInstance = new MonitoringService(new client.Registry())
 
 module.exports = MonitoringInstance

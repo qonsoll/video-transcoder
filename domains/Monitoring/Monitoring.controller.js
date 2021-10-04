@@ -15,7 +15,7 @@ class MonitoringController {
 
   async metrics(req, res) {
     // Start the HTTP request timer, saving a reference to the returned method
-    const end = httpRequestTimer.startTimer()
+    const end = MonitoringInstance.httpRequestTimer.startTimer()
     // Save reference to the path so we can record it when ending the timer
     const route = req.route.path
 
