@@ -1,4 +1,5 @@
 const ApplicationService = require('./Application.service')
+const MonitoringInstance = require('../Monitoring')
 
 /**
  * This Controller helps to process requests to application domain of server.
