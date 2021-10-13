@@ -52,6 +52,39 @@ class VideoController {
     res.status(200).send({ data: sessionId })
   }
 
+  async getVideo(req, res) {
+    const appId = req.headers.appid
+    const dbService = new DatabaseService()
+    const videoId = req.params.id
+
+    try {
+      const getVideoQuery = await dbService
+        .getDocumentRef(COLLECTIONS.VIDEOS, videoId)
+        .get()
+      const videoData = getVideoQuery.data()
+      const responseData = {
+        link: videoData.link,
+        format: videoData.format,
+        withSubtitles: videoData.withSubtitles
+      }
+      if (videoData.withSubtitles) {
+        const getSubtitlesQuery = await dbService
+          .getCollectionRef(COLLECTIONS.SUBTITLES)
+          .where('videoId', '==', videoId)
+          .get()
+        const subtitlesData = getSubtitlesQuery.docs.map((item) => ({
+          link: item.data().link,
+          language: item.data().language,
+          languageLabel: item.data().languageLabel
+        }))
+        responseData.subtitles = subtitlesData
+      }
+      res.status(200).send({ data: responseData })
+    } catch (err) {
+      res.status(404).send({ data: err.message })
+    }
+  }
+
   async getVideos(req, res) {
     // appId - is required to be in request header
     const appId = req.headers.appid
