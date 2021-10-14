@@ -1,6 +1,4 @@
-const { MonitoringInstance } = require('../domains/Monitoring')
-
-module.exports = (controllerMethod) => {
+module.exports = (controllerMethod, MonitoringInstance) => {
   return async (req, res) => {
     // Start the HTTP request timer, saving a reference to the returned method
     const end = MonitoringInstance.httpRequestTimer.startTimer()

@@ -3,14 +3,14 @@ const MonitoringInstance = require('./Monitoring.service')
 class MonitoringController {
   constructor() {}
 
-  health(req, res) {
+  async health(req, res) {
     const data = {
       uptime: process.uptime(),
       message: 'ok',
       date: new Date()
     }
 
-    res.status(200).send(data)
+    await res.status(200).send(data)
   }
 
   async metrics(req, res) {
