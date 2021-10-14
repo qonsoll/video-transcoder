@@ -6,6 +6,7 @@ const {
   accessTimeMetrics
 } = require('../../middlewares')
 const Validation = require('./Video.validation')
+const { MonitoringInstance } = require('../Monitoring')
 
 const router = express.Router()
 const Controller = new VideoController()
@@ -18,17 +19,23 @@ router.route('/:id').get(validate(Validation.getVideo), Controller.getVideo)
 
 router
   .route('/upload')
-  .post(validate(Validation.uploadVideo), accessTimeMetrics(Controller.upload))
+  .post(
+    validate(Validation.uploadVideo),
+    accessTimeMetrics(Controller.upload, MonitoringInstance)
+  )
 
 router
   .route('/convert/:id')
-  .get(validate(Validation.convertVideo), accessTimeMetrics(Controller.convert))
+  .get(
+    validate(Validation.convertVideo),
+    accessTimeMetrics(Controller.convert, MonitoringInstance)
+  )
 
 router
   .route('/createSubtitles/:id')
   .get(
     validate(Validation.addSubtitles),
-    accessTimeMetrics(Controller.addSubtitles)
+    accessTimeMetrics(Controller.addSubtitles, MonitoringInstance)
   )
 
 /**

@@ -20,8 +20,10 @@ module.exports = (response, fileService, dbService, storageItem, sessionId) => {
       {
         appId,
         link,
+        withSubtitles,
         path: `${appName}_${appId}/videos/${file.name}.${toFormat}`,
-        filename: `${file.name}.${toFormat}`
+        filename: `${file.name}.${toFormat}`,
+        format: `video/${toFormat}`
       },
       { withoutUndefOrNull: true }
     )
@@ -35,7 +37,7 @@ module.exports = (response, fileService, dbService, storageItem, sessionId) => {
         videoId: newDoc
       })
     // Sending video link to client and closing SSE channel
-    response.write(`event: link\ndata: ${link}\n\n`)
+    response.write(`event: videoId\ndata: ${newDoc}\n\n`)
     response.end()
     // Deleting files from local folders
     if (!withSubtitles) {
