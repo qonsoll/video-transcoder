@@ -12,10 +12,10 @@ class VideoService {
    * @constructor
    */
   constructor() {
-    // ffmpeg.setFfmpegPath('/usr/bin/ffmpeg')
-    // ffmpeg.setFfprobePath('/usr/bin/ffprobe')
-    ffmpeg.setFfmpegPath('D:\\FFMPEG\\bin\\ffmpeg.exe')
-    ffmpeg.setFfprobePath('D:\\FFMPEG\\bin')
+    ffmpeg.setFfmpegPath('/usr/bin/ffmpeg')
+    ffmpeg.setFfprobePath('/usr/bin/ffprobe')
+    // ffmpeg.setFfmpegPath('D:\\FFMPEG\\bin\\ffmpeg.exe')
+    // ffmpeg.setFfprobePath('D:\\FFMPEG\\bin')
   }
 
   /**

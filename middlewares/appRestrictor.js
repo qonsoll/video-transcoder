@@ -1,6 +1,5 @@
 const { DatabaseService } = require('../domains/Database')
 const { COLLECTIONS } = require('../constants')
-const { isUndefined } = require('lodash')
 
 module.exports = async (req, res, next) => {
   if (req.headers.accept !== 'text/event-stream') {
@@ -12,7 +11,10 @@ module.exports = async (req, res, next) => {
     } else {
       const database = new DatabaseService()
       try {
-        await database.getDocumentRef(COLLECTIONS.APPLICATIONS, appId).get()
+        const appData = await database
+          .getDocumentRef(COLLECTIONS.APPLICATIONS, appId)
+          .get()
+        if (!appData.data()) throw new Error('There is no such application')
         return next()
       } catch (err) {
         return res
