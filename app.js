@@ -75,7 +75,7 @@ app.use(
   })
 )
 
-app.use(helmet())
+// app.use(helmet())
 
 app.use('/', MonitoringRouter)
 app.use('/video', VideoRouter)
