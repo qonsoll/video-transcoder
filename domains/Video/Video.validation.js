@@ -15,6 +15,15 @@ const getVideo = Joi.object({
   })
 })
 
+const deleteVideo = Joi.object({
+  headers: Joi.object().keys({
+    appid: Joi.string().required()
+  }),
+  params: Joi.object().keys({
+    id: Joi.required()
+  })
+})
+
 const uploadVideo = Joi.object({
   body: Joi.object().keys({
     uploadProps: Joi.string().required()
@@ -41,5 +50,6 @@ module.exports = {
   convertVideo,
   addSubtitles,
   getVideos,
-  getVideo
+  getVideo,
+  deleteVideo
 }

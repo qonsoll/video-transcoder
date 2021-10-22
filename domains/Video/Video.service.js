@@ -35,6 +35,7 @@ class VideoService {
     processedFolderPath,
     file,
     to = 'mp4',
+    onProgressListener,
     outputOptions
   ) {
     // outputOptions is unnecessary param so if we have it - we run ffmpeg command with it
@@ -46,6 +47,7 @@ class VideoService {
           .saveToFile(`${processedFolderPath}${file.name}.${to}`)
       : ffmpeg(`${sourceFolderPath}${file.name}`)
           .withOutputFormat(to)
+          .on('progress', onProgressListener)
           .saveToFile(`${processedFolderPath}${file.name}.${to}`)
   }
 

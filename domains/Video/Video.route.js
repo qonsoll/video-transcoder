@@ -15,7 +15,10 @@ router.use(appRestrictor)
 
 router.route('/').get(validate(Validation.getVideos), Controller.getVideos)
 
-router.route('/:id').get(validate(Validation.getVideo), Controller.getVideo)
+router
+  .route('/:id')
+  .get(validate(Validation.getVideo), Controller.getVideo)
+  .delete(validate(Validation.deleteVideo), Controller.deleteVideo)
 
 router
   .route('/upload')

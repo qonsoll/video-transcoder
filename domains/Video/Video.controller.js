@@ -4,7 +4,9 @@ const { Storage } = require('../ServerStorage')
 const { v4: uuidv4 } = require('uuid')
 const { DatabaseService } = require('../Database')
 const { COLLECTIONS, FOLDERS } = require('../../constants')
+const admin = require('firebase-admin')
 const Handlers = require('./handlers')
+const moment = require('moment')
 
 /**
  * This Controller helps to process requests to video domain of server.
@@ -24,7 +26,9 @@ class VideoController {
    */
   async upload(req, res) {
     // toFormat, withSubtitles - are required body fields
-    const { toFormat, withSubtitles } = JSON.parse(req.body.uploadProps)
+    const { toFormat, withSubtitles, language, videoDuration } = JSON.parse(
+      req.body.uploadProps
+    )
     // file - is required to be in request files array
     const file = req.files.data
     // appId - is required to be in request header
@@ -44,12 +48,31 @@ class VideoController {
       file,
       sessionId,
       withSubtitles,
+      language,
+      videoDuration,
       appName: appData.name,
       appId: appData.id
     })
 
     // Sending successful response
     res.status(200).send({ data: sessionId })
+  }
+
+  async deleteVideo(req, res) {
+    const dbService = new DatabaseService()
+    const videoId = req.params.id
+
+    try {
+      const fileData = await dbService
+        .getDocumentRef(COLLECTIONS.VIDEOS, videoId)
+        .get()
+      const filePath = fileData.data().path
+      await admin.storage().bucket().file(filePath).delete()
+      await dbService.deleteDocument(COLLECTIONS.VIDEOS, videoId)
+      res.status(200).send({ data: 'deleted' })
+    } catch (err) {
+      res.status(501).send({ data: err.message })
+    }
   }
 
   async getVideo(req, res) {
@@ -129,7 +152,15 @@ class VideoController {
     }
 
     // Initializing all necessary services and constants for this endpoint
-    const { toFormat, file, appName, appId, withSubtitles } = storageItem
+    const {
+      toFormat,
+      file,
+      appName,
+      appId,
+      withSubtitles,
+      language,
+      videoDuration
+    } = storageItem
     const videoService = new VideoService()
     const fileService = new FileService(file)
     const dbService = new DatabaseService()
@@ -143,14 +174,15 @@ class VideoController {
           FOLDERS.UPLOAD_DIRECTORY,
           FOLDERS.RESULT_DIRECTORY,
           file,
-          toFormat
+          toFormat,
+          (progress) => {
+            const percent =
+              (moment.duration(progress.timemark).asSeconds() * 100) /
+              Number.parseInt(videoDuration)
+            // Sending progress to client
+            res.write(`event: progress\ndata: ${percent}\n\n`)
+          }
         )
-        // On convert progress event listener
-        .on('progress', (progress) => {
-          const percent = (progress.targetSize * 100) / (file.size / 1024)
-          // Sending progress to client
-          res.write(`event: progress\ndata: ${percent}\n\n`)
-        })
         // On convert process end
         .on(
           'end',
