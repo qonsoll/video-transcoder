@@ -102,6 +102,7 @@ class VideoController {
         }))
         responseData.subtitles = subtitlesData
       }
+      console.log('Response sent')
       res.status(200).send({ data: responseData })
     } catch (err) {
       res.status(404).send({ data: err.message })
