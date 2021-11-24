@@ -70,8 +70,8 @@ app.use(cors())
 
 app.use(
   fileUpload({
-    useTempFiles: true,
-    tempFileDir: '/uploadBuffer/'
+    createParentPath: true,
+    tempFileDir: 'uploadBuffer/'
   })
 )
 

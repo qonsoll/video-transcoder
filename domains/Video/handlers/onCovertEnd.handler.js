@@ -14,6 +14,20 @@ module.exports = (response, fileService, dbService, storageItem, sessionId) => {
         }
       )
     ).link
+    const posterLink = (
+      await fileService.uploadFileToStorage(
+        FOLDERS.POSTERS_DIRECTORY,
+        `${file.name}-poster.png`,
+        {
+          destination: `${appName}_${appId}/posters/${file.name}-poster.png`
+        }
+      )
+    ).link
+
+    await fileService.deleteFileFromFolder(
+      FOLDERS.POSTERS_DIRECTORY,
+      `${file.name}-poster.png`
+    )
     // Adding metadata about video to database collection
     const newDoc = await dbService.createDocument(
       COLLECTIONS.VIDEOS,
@@ -21,6 +35,9 @@ module.exports = (response, fileService, dbService, storageItem, sessionId) => {
         appId,
         link,
         withSubtitles,
+        posterImage,
+        posterLink,
+        posterPath: `${appName}_${appId}/posters/${file.name}-poster.png`,
         path: `${appName}_${appId}/videos/${file.name}.${toFormat}`,
         filename: `${file.name}.${toFormat}`,
         format: `video/${toFormat}`

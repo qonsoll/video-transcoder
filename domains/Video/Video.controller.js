@@ -67,7 +67,9 @@ class VideoController {
         .getDocumentRef(COLLECTIONS.VIDEOS, videoId)
         .get()
       const filePath = fileData.data().path
+      const posterPath = fileData.data().posterPath
       await admin.storage().bucket().file(filePath).delete()
+      await admin.storage().bucket().file(posterPath).delete()
       await dbService.deleteDocument(COLLECTIONS.VIDEOS, videoId)
       res.status(200).send({ data: 'deleted' })
     } catch (err) {
@@ -102,7 +104,6 @@ class VideoController {
         }))
         responseData.subtitles = subtitlesData
       }
-      console.log('Response sent')
       res.status(200).send({ data: responseData })
     } catch (err) {
       res.status(404).send({ data: err.message })
@@ -153,15 +154,7 @@ class VideoController {
     }
 
     // Initializing all necessary services and constants for this endpoint
-    const {
-      toFormat,
-      file,
-      appName,
-      appId,
-      withSubtitles,
-      language,
-      videoDuration
-    } = storageItem
+    const { toFormat, file, videoDuration } = storageItem
     const videoService = new VideoService()
     const fileService = new FileService(file)
     const dbService = new DatabaseService()
@@ -169,6 +162,11 @@ class VideoController {
     try {
       // Moving uploaded file to processing folder
       fileService.moveFileToAnotherFolder(FOLDERS.UPLOAD_DIRECTORY)
+      videoService.getPosterImage(
+        FOLDERS.UPLOAD_DIRECTORY,
+        FOLDERS.POSTERS_DIRECTORY,
+        file
+      )
       // Converting video using request data
       videoService
         .convert(

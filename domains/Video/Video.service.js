@@ -15,7 +15,7 @@ class VideoService {
     ffmpeg.setFfmpegPath('/usr/bin/ffmpeg')
     ffmpeg.setFfprobePath('/usr/bin/ffprobe')
     // ffmpeg.setFfmpegPath('D:\\FFMPEG\\bin\\ffmpeg.exe')
-    // ffmpeg.setFfprobePath('D:\\FFMPEG\\bin')
+    // ffmpeg.setFfprobePath('D:\\FFMPEG\\bin\\ffprobe.exe')
   }
 
   /**
@@ -51,6 +51,13 @@ class VideoService {
           .saveToFile(`${processedFolderPath}${file.name}.${to}`)
   }
 
+  getPosterImage(sourceFolderPath, processedFolderPath, file) {
+    return ffmpeg(`${sourceFolderPath}${file.name}`).screenshots({
+      timestamps: [0.5],
+      filename: '%f-poster.png',
+      folder: processedFolderPath
+    })
+  }
   /**
    * This function extract audio from video file and saves new audio file into local folder
    *
