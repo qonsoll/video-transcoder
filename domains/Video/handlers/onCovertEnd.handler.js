@@ -35,7 +35,6 @@ module.exports = (response, fileService, dbService, storageItem, sessionId) => {
         appId,
         link,
         withSubtitles,
-        posterImage,
         posterLink,
         posterPath: `${appName}_${appId}/posters/${file.name}-poster.png`,
         path: `${appName}_${appId}/videos/${file.name}.${toFormat}`,
