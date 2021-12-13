@@ -3,7 +3,8 @@ const { Storage } = require('../../ServerStorage')
 
 module.exports = (response, fileService, dbService, storageItem, sessionId) => {
   return async (stdout, stderr) => {
-    const { toFormat, file, appName, appId, withSubtitles } = storageItem
+    const { toFormat, file, appName, appId, withSubtitles, chapters } =
+      storageItem
     // Uploading converted video to cloud storage and getting link
     const link = (
       await fileService.uploadFileToStorage(
@@ -33,9 +34,9 @@ module.exports = (response, fileService, dbService, storageItem, sessionId) => {
       COLLECTIONS.VIDEOS,
       {
         appId,
+        chapters,
         link,
         withSubtitles,
-        posterImage,
         posterLink,
         posterPath: `${appName}_${appId}/posters/${file.name}-poster.png`,
         path: `${appName}_${appId}/videos/${file.name}.${toFormat}`,
