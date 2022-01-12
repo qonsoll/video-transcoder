@@ -1,10 +1,18 @@
 const { COLLECTIONS, FOLDERS } = require('../../../constants')
 const { Storage } = require('../../ServerStorage')
+const createGeneralVideoStatisticEntry = require('./createGeneralVideoStatisticEntry')
 
 module.exports = (response, fileService, dbService, storageItem, sessionId) => {
   return async (stdout, stderr) => {
-    const { toFormat, file, appName, appId, withSubtitles, chapters } =
-      storageItem
+    const {
+      toFormat,
+      file,
+      appName,
+      appId,
+      withSubtitles,
+      chapters,
+      videoDuration
+    } = storageItem
     // Uploading converted video to cloud storage and getting link
     const link = (
       await fileService.uploadFileToStorage(
@@ -44,6 +52,15 @@ module.exports = (response, fileService, dbService, storageItem, sessionId) => {
         format: `video/${toFormat}`
       },
       { withoutUndefOrNull: true }
+    )
+    await createGeneralVideoStatisticEntry(
+      {
+        size: null,
+        duration: videoDuration,
+        chapters,
+        videoId: newDoc
+      },
+      dbService
     )
     withSubtitles &&
       Storage.addItem({
