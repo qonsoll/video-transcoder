@@ -94,6 +94,15 @@ class DatabaseService {
     await this.database.collection(path).doc(id).delete()
     return id
   }
+
+  /**
+   *
+   * @param {Date} date - date that we want to convert into FB Timestamp
+   * @returns {FirebaseFirestore.Timestamp} given date converted into FB Timestamp object
+   */
+  convertToFBTimestamp(date) {
+    return admin.firestore.Timestamp.fromDate(date)
+  }
 }
 
 module.exports = DatabaseService
