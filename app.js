@@ -4,6 +4,7 @@ const cors = require('cors')
 const helmet = require('helmet')
 const admin = require('firebase-admin')
 const serviceAccount = require('./qonsoll-video-transcoder-firebase-adminsdk-ntmhf-b688febd35.json')
+const corsOptions = require('./middlewares/corsOptions.js')
 
 const { VideoRouter } = require('./domains/Video')
 const { ApplicationRouter } = require('./domains/Application')
@@ -20,24 +21,7 @@ admin.initializeApp({
 })
 
 app.use(async (req, res, next) => {
-  // Website you wish to allow to connect
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  // res.setHeader('Content-Type', 'application/json;charset=UTF-8')
-
-  // Request methods you wish to allow
-  res.setHeader(
-    'Access-Control-Allow-Methods',
-    'GET, POST, OPTIONS, PUT, PATCH, DELETE'
-  )
-
-  // Request headers you wish to allow
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-Requested-With,content-type',
-    'Content-type'
-  )
-
-  // Cloud Storage CORS settings
+  // Cloud Storage CORS settings to read stored files
   await admin
     .storage()
     .bucket()
@@ -57,6 +41,8 @@ app.use(async (req, res, next) => {
   next()
 })
 
+app.use(cors(corsOptions))
+
 app.use(
   express.urlencoded({
     extended: false
@@ -65,8 +51,6 @@ app.use(
 
 // app.use(express.text());
 app.use(express.json())
-
-app.use(cors())
 
 app.use(
   fileUpload({

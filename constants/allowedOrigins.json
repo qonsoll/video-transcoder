@@ -1,0 +1,14 @@
+{
+  "allowed_origins": [
+    "https://foi-therapist-app-dev.web.app",
+    "https://foi-therapist-app-prod.web.app",
+    "https://therapist.foihelse.com",
+    "https://foi-patient-app-dev.web.app",
+    "https://foi-patient-app-prod.web.app",
+    "https://client.foihelse.com",
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://localhost:3002",
+    "foibackend"
+  ]
+}
