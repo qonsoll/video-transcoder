@@ -7,9 +7,9 @@ const origins = originList.allowed_origins
 const corsOptions = {
   origin: function (origin, callback) {
     if (origins.indexOf(origin) !== -1) {
-      callback(null, true)
+      return callback(null, true)
     } else {
-      callback(new Error('Not allowed by CORS'))
+      return callback(new Error('Not allowed by CORS'))
     }
   },
   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204

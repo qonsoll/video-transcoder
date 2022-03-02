@@ -65,6 +65,8 @@ app.use('/', MonitoringRouter)
 app.use('/video', VideoRouter)
 app.use('/application', ApplicationRouter)
 
-http.listen(PORT, () => {
+const server = http.listen(PORT, () => {
   console.log(`App is running on port ${PORT}`)
 })
+
+module.exports = { app, server }

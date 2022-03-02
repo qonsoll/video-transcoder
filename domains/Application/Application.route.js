@@ -2,6 +2,7 @@ const express = require('express')
 const ApplicationController = require('./Application.controller')
 const ApplicationValidation = require('./Application.validation')
 const { validate, accessTimeMetrics } = require('../../middlewares')
+const { MonitoringInstance } = require('../Monitoring')
 
 const router = express.Router()
 const Controller = new ApplicationController()
@@ -10,14 +11,14 @@ router
   .route('/')
   .post(
     validate(ApplicationValidation.createApp),
-    accessTimeMetrics(Controller.create)
+    accessTimeMetrics(Controller.create, MonitoringInstance)
   )
 
 router
   .route('/:id')
   .delete(
     validate(ApplicationValidation.deleteApp),
-    accessTimeMetrics(Controller.delete)
+    accessTimeMetrics(Controller.delete, MonitoringInstance)
   )
 
 /**
