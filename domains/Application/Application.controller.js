@@ -25,7 +25,7 @@ class ApplicationController {
       res.status(200).send({ data: { message: 'created', appId: appId } })
     } catch (err) {
       console.timeLog(err)
-      res.status(400).send({ data: { message: 'error', error: err } })
+      res.status(500).send({ data: { message: 'error', error: err } })
     }
   }
 
@@ -42,7 +42,7 @@ class ApplicationController {
         .status(200)
         .send({ data: { message: 'deleted', appId: deletedAppId } })
     } catch (err) {
-      res.status(400).send({ data: { message: 'error', error: err } })
+      res.status(500).send({ data: { message: 'error', error: err } })
     }
   }
 }
