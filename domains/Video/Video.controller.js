@@ -128,17 +128,14 @@ class VideoController {
   async getVideos(req, res) {
     // appId - is required to be in request header
     const appId = req.headers.appid
-    const dbService = new DatabaseService()
 
     try {
-      const dbQuery = await dbService
-        .getCollectionRef(COLLECTIONS.VIDEOS)
-        .where('appId', '==', appId)
-        .get()
-      const videoData = dbQuery.docs.map((item) => item.data())
+      const videoService = new VideoService()
+      const videoData = await videoService.getVideos(appId)
       res.status(200).send({ data: videoData })
     } catch (err) {
-      res.status(404).send({ data: err.message })
+      const message = err.message
+      res.status(404).send({ data: message })
     }
   }
 

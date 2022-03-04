@@ -1,5 +1,7 @@
 const ffmpeg = require('fluent-ffmpeg')
-const { FOLDERS } = require('../../constants')
+const { COLLECTIONS, FOLDERS } = require('../../constants')
+const { DatabaseService } = require('../Database')
+
 /**
  * This class helps to work with video. Convert to another format, extract audio from video
  * @module Video
@@ -16,6 +18,16 @@ class VideoService {
     ffmpeg.setFfprobePath('/usr/bin/ffprobe')
     // ffmpeg.setFfmpegPath('D:\\FFMPEG\\bin\\ffmpeg.exe')
     // ffmpeg.setFfprobePath('D:\\FFMPEG\\bin\\ffprobe.exe')
+  }
+
+  async getVideos(appId) {
+    const dbService = new DatabaseService()
+
+    const dbQuery = await dbService
+      .getCollectionRef(COLLECTIONS.VIDEOS)
+      .where('appId', '==', appId)
+      .get()
+    return dbQuery.docs.map((item) => item.data())
   }
 
   /**
