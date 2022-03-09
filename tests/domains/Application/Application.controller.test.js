@@ -30,6 +30,8 @@ afterAll(() => {
   server.close()
 })
 
+jest.setTimeout(20000) // ms
+
 // ===================================================
 
 describe('create', () => {
