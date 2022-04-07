@@ -1,6 +1,6 @@
-const MonitoringInstance = require('./Monitoring.service')
-const MonitoringController = require('./Monitoring.controller')
-const MonitoringRouter = require('./Monitoring.route')
+const MonitoringInstance = require('./Service')
+const MonitoringController = require('./Controller')
+const MonitoringRouter = require('./Route')
 
 module.exports = {
   MonitoringInstance,
