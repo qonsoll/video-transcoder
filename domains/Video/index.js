@@ -1,7 +1,7 @@
-const VideoController = require('./Video.controller')
-const VideoRouter = require('./Video.route')
-const VideoService = require('./Video.service')
-const VideoValidation = require('./Video.validation')
+const VideoController = require('./Controller')
+const VideoRouter = require('./Route')
+const VideoService = require('./Service')
+const VideoValidation = require('./Validation')
 
 module.exports = {
   VideoController,

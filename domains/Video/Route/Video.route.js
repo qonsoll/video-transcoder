@@ -1,15 +1,14 @@
 const express = require('express')
-const VideoController = require('./Video.controller')
+const Controller = require('../Controller')
 const {
   validate,
   appRestrictor,
   accessTimeMetrics
-} = require('../../middlewares')
-const Validation = require('./Video.validation')
-const { MonitoringInstance } = require('../Monitoring')
+} = require('../../../middlewares')
+const Validation = require('../Validation')
+const { MonitoringInstance } = require('../../Monitoring')
 
 const router = express.Router()
-const Controller = new VideoController()
 
 router.use(appRestrictor)
 
@@ -24,14 +23,14 @@ router
   .route('/upload')
   .post(
     validate(Validation.uploadVideo),
-    accessTimeMetrics(Controller.upload, MonitoringInstance)
+    accessTimeMetrics(Controller.uploadVideo, MonitoringInstance)
   )
 
 router
   .route('/convert/:id')
   .get(
     validate(Validation.convertVideo),
-    accessTimeMetrics(Controller.convert, MonitoringInstance)
+    accessTimeMetrics(Controller.convertVideo, MonitoringInstance)
   )
 
 router
