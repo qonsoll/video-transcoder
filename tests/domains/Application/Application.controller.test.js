@@ -3,27 +3,18 @@ process.env.PORT = 1000
 const request = require('supertest')
 const { app, server } = require('../../../app')
 
-const ApplicationService = require('../../../domains/Application/Application.service')
+const Service = require('../../../domains/Application/Service')
 
 // =============== mocks configuration ===============
 
-const mockCreateApp = jest.fn()
-const mockDeleteApp = jest.fn()
-
-jest.mock('../../../domains/Application/Application.service', () => {
-  return jest.fn().mockImplementation(() => {
-    return {
-      createApp: mockCreateApp,
-      deleteApp: mockDeleteApp
-    }
-  })
-})
+jest.mock('../../../domains/Application/Service', () => ({
+  createApp: jest.fn(),
+  deleteApp: jest.fn()
+}))
 
 beforeEach(() => {
-  ApplicationService.mockClear()
-
-  mockCreateApp.mockClear()
-  mockDeleteApp.mockClear()
+  Service.createApp.mockClear()
+  Service.deleteApp.mockClear()
 })
 
 afterAll(() => {
@@ -45,7 +36,7 @@ describe('create', () => {
     }
     const requestBody = { name: 'test_name' }
 
-    mockCreateApp.mockReturnValue(appId)
+    Service.createApp.mockReturnValue(appId)
 
     request(app)
       .post('/application')
@@ -55,9 +46,8 @@ describe('create', () => {
       .then((response) => {
         expect(response.body).toEqual(responseBody)
 
-        expect(ApplicationService.mock.calls.length).toBe(1)
-        expect(mockCreateApp.mock.calls.length).toBe(1)
-        expect(mockCreateApp.mock.calls[0][0]).toBe('test_name')
+        expect(Service.createApp.mock.calls.length).toBe(1)
+        expect(Service.createApp.mock.calls[0][0]).toBe('test_name')
 
         return done()
       })
@@ -75,8 +65,7 @@ describe('create', () => {
       .then((response) => {
         expect(response.body).toEqual({})
 
-        expect(ApplicationService.mock.calls.length).toBe(0)
-        expect(mockCreateApp.mock.calls.length).toBe(0)
+        expect(Service.createApp.mock.calls.length).toBe(0)
 
         return done()
       })
@@ -92,7 +81,7 @@ describe('create', () => {
     }
     const requestBody = { name: 'test_name' }
 
-    mockCreateApp.mockRejectedValue(new Error('test error'))
+    Service.createApp.mockRejectedValue(new Error('test error'))
 
     request(app)
       .post('/application')
@@ -102,9 +91,8 @@ describe('create', () => {
       .then((response) => {
         expect(response.body).toEqual(responseBody)
 
-        expect(ApplicationService.mock.calls.length).toBe(1)
-        expect(mockCreateApp.mock.calls.length).toBe(1)
-        expect(mockCreateApp.mock.calls[0][0]).toBe('test_name')
+        expect(Service.createApp.mock.calls.length).toBe(1)
+        expect(Service.createApp.mock.calls[0][0]).toBe('test_name')
 
         return done()
       })
@@ -122,7 +110,7 @@ describe('delete', () => {
       }
     }
 
-    mockDeleteApp.mockReturnValue(appId)
+    Service.deleteApp.mockReturnValue(appId)
 
     request(app)
       .delete('/application/test_id')
@@ -131,9 +119,8 @@ describe('delete', () => {
       .then((response) => {
         expect(response.body).toEqual(responseBody)
 
-        expect(ApplicationService.mock.calls.length).toBe(1)
-        expect(mockDeleteApp.mock.calls.length).toBe(1)
-        expect(mockDeleteApp.mock.calls[0][0]).toBe('test_id')
+        expect(Service.deleteApp.mock.calls.length).toBe(1)
+        expect(Service.deleteApp.mock.calls[0][0]).toBe('test_id')
 
         return done()
       })
@@ -141,7 +128,6 @@ describe('delete', () => {
   })
 
   test('delete fail: error', (done) => {
-    const appId = 'test_id'
     const responseBody = {
       data: {
         message: 'error',
@@ -149,7 +135,7 @@ describe('delete', () => {
       }
     }
 
-    mockDeleteApp.mockRejectedValue(new Error('test error'))
+    Service.deleteApp.mockRejectedValue(new Error('test error'))
 
     request(app)
       .delete('/application/test_id')
@@ -158,9 +144,8 @@ describe('delete', () => {
       .then((response) => {
         expect(response.body).toEqual(responseBody)
 
-        expect(ApplicationService.mock.calls.length).toBe(1)
-        expect(mockDeleteApp.mock.calls.length).toBe(1)
-        expect(mockDeleteApp.mock.calls[0][0]).toBe('test_id')
+        expect(Service.deleteApp.mock.calls.length).toBe(1)
+        expect(Service.deleteApp.mock.calls[0][0]).toBe('test_id')
 
         return done()
       })
