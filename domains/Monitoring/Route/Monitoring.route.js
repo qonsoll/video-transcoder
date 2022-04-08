@@ -1,10 +1,10 @@
 const express = require('express')
-const MonitoringController = require('./Monitoring.controller')
-const MonitoringInstance = require('./Monitoring.service')
-const { accessTimeMetrics } = require('../../middlewares')
+const Controller = require('../Controller')
+const { accessTimeMetrics } = require('../../../middlewares')
+const MonitoringInstance = require('../Service')
 
 const router = express.Router()
-const Controller = new MonitoringController()
+// const Controller = new MonitoringController()
 
 router
   .route('/health')

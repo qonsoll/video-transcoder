@@ -1,7 +1,7 @@
-const ApplicationController = require('./Application.controller')
-const ApplicationService = require('./Application.service')
-const ApplicationValidation = require('./Application.validation')
-const ApplicationRouter = require('./Application.route')
+const ApplicationController = require('./Controller')
+const ApplicationRouter = require('./Route')
+const ApplicationService = require('./Service')
+const ApplicationValidation = require('./Validation')
 
 module.exports = {
   ApplicationController,

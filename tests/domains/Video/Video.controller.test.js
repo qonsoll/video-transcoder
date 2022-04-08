@@ -13,44 +13,29 @@ jest.mock('../../../middlewares/appRestrictor', () => {
 
 const { app, server } = require('../../../app')
 
-const VideoService = require('../../../domains/Video/Video.service')
+const Service = require('../../../domains/Video/Service')
 
-const mockGetVideos = jest.fn()
-const mockGetVideo = jest.fn()
-const mockDeleteVideo = jest.fn()
-const mockUpload = jest.fn()
-const mockConvertFile = jest.fn()
-const mockAddSubtitles = jest.fn()
-mockConvertFile.mockImplementation((id, res) => {
-  res.end()
-})
-mockAddSubtitles.mockImplementation((id, res) => {
-  res.end()
-})
-
-jest.mock('../../../domains/Video/Video.service', () => {
-  return jest.fn().mockImplementation(() => {
-    return {
-      getVideos: mockGetVideos,
-      getVideo: mockGetVideo,
-      deleteVideo: mockDeleteVideo,
-      upload: mockUpload,
-      convertFile: mockConvertFile,
-      addSubtitles: mockAddSubtitles
-    }
+jest.mock('../../../domains/Video/Service', () => ({
+  getVideos: jest.fn(),
+  getVideo: jest.fn(),
+  deleteVideo: jest.fn(),
+  uploadVideo: jest.fn(),
+  convertFile: jest.fn().mockImplementation((id, res) => {
+    res.end()
+  }),
+  addSubtitles: jest.fn().mockImplementation((id, res) => {
+    res.end()
   })
-})
+}))
 
 beforeEach(() => {
   appRestrictor.mockClear()
-  VideoService.mockClear()
-
-  mockGetVideos.mockClear()
-  mockGetVideo.mockClear()
-  mockDeleteVideo.mockClear()
-  mockUpload.mockClear()
-  mockConvertFile.mockClear()
-  mockAddSubtitles.mockClear()
+  Service.getVideos.mockClear()
+  Service.getVideo.mockClear()
+  Service.deleteVideo.mockClear()
+  Service.uploadVideo.mockClear()
+  Service.convertFile.mockClear()
+  Service.addSubtitles.mockClear()
 })
 
 afterAll(() => {
@@ -69,7 +54,7 @@ describe('getVideos', () => {
       data: result
     }
 
-    mockGetVideos.mockReturnValue(result)
+    Service.getVideos.mockReturnValue(result)
 
     request(app)
       .get('/video')
@@ -80,9 +65,8 @@ describe('getVideos', () => {
         expect(response.body).toEqual(responseBody)
 
         expect(appRestrictor.mock.calls.length).toBe(1)
-        expect(VideoService.mock.calls.length).toBe(1)
-        expect(mockGetVideos.mock.calls.length).toBe(1)
-        expect(mockGetVideos.mock.calls[0][0]).toBe('test_id')
+        expect(Service.getVideos.mock.calls.length).toBe(1)
+        expect(Service.getVideos.mock.calls[0][0]).toBe('test_id')
 
         return done()
       })
@@ -95,7 +79,7 @@ describe('getVideos', () => {
       data: 'test error'
     }
 
-    mockGetVideos.mockRejectedValue(new Error('test error'))
+    Service.getVideos.mockRejectedValue(new Error('test error'))
 
     request(app)
       .get('/video')
@@ -106,9 +90,8 @@ describe('getVideos', () => {
         expect(response.body).toEqual(responseBody)
 
         expect(appRestrictor.mock.calls.length).toBe(1)
-        expect(VideoService.mock.calls.length).toBe(1)
-        expect(mockGetVideos.mock.calls.length).toBe(1)
-        expect(mockGetVideos.mock.calls[0][0]).toBe('test_id')
+        expect(Service.getVideos.mock.calls.length).toBe(1)
+        expect(Service.getVideos.mock.calls[0][0]).toBe('test_id')
 
         return done()
       })
@@ -125,7 +108,7 @@ describe('getVideo', () => {
       data: result
     }
 
-    mockGetVideo.mockReturnValue(result)
+    Service.getVideo.mockReturnValue(result)
 
     request(app)
       .get('/video/test_video_id')
@@ -136,10 +119,9 @@ describe('getVideo', () => {
         expect(response.body).toEqual(responseBody)
 
         expect(appRestrictor.mock.calls.length).toBe(1)
-        expect(VideoService.mock.calls.length).toBe(1)
-        expect(mockGetVideo.mock.calls.length).toBe(1)
-        expect(mockGetVideo.mock.calls[0][0]).toBe(appId)
-        expect(mockGetVideo.mock.calls[0][1]).toBe(videoId)
+        expect(Service.getVideo.mock.calls.length).toBe(1)
+        expect(Service.getVideo.mock.calls[0][0]).toBe(appId)
+        expect(Service.getVideo.mock.calls[0][1]).toBe(videoId)
 
         return done()
       })
@@ -153,7 +135,7 @@ describe('getVideo', () => {
       data: 'test error'
     }
 
-    mockGetVideo.mockRejectedValue(new Error('test error'))
+    Service.getVideo.mockRejectedValue(new Error('test error'))
 
     request(app)
       .get('/video/test_video_id')
@@ -164,10 +146,9 @@ describe('getVideo', () => {
         expect(response.body).toEqual(responseBody)
 
         expect(appRestrictor.mock.calls.length).toBe(1)
-        expect(VideoService.mock.calls.length).toBe(1)
-        expect(mockGetVideo.mock.calls.length).toBe(1)
-        expect(mockGetVideo.mock.calls[0][0]).toBe(appId)
-        expect(mockGetVideo.mock.calls[0][1]).toBe(videoId)
+        expect(Service.getVideo.mock.calls.length).toBe(1)
+        expect(Service.getVideo.mock.calls[0][0]).toBe(appId)
+        expect(Service.getVideo.mock.calls[0][1]).toBe(videoId)
 
         return done()
       })
@@ -192,10 +173,9 @@ describe('deleteVideo', () => {
         expect(response.body).toEqual(responseBody)
 
         expect(appRestrictor.mock.calls.length).toBe(1)
-        expect(VideoService.mock.calls.length).toBe(1)
-        expect(mockDeleteVideo.mock.calls.length).toBe(1)
-        expect(mockDeleteVideo.mock.calls[0][0]).toBe(appId)
-        expect(mockDeleteVideo.mock.calls[0][1]).toBe(videoId)
+        expect(Service.deleteVideo.mock.calls.length).toBe(1)
+        expect(Service.deleteVideo.mock.calls[0][0]).toBe(appId)
+        expect(Service.deleteVideo.mock.calls[0][1]).toBe(videoId)
 
         return done()
       })
@@ -209,7 +189,7 @@ describe('deleteVideo', () => {
       data: 'test error'
     }
 
-    mockDeleteVideo.mockRejectedValue(new Error('test error'))
+    Service.deleteVideo.mockRejectedValue(new Error('test error'))
 
     request(app)
       .delete('/video/test_video_id')
@@ -220,10 +200,9 @@ describe('deleteVideo', () => {
         expect(response.body).toEqual(responseBody)
 
         expect(appRestrictor.mock.calls.length).toBe(1)
-        expect(VideoService.mock.calls.length).toBe(1)
-        expect(mockDeleteVideo.mock.calls.length).toBe(1)
-        expect(mockDeleteVideo.mock.calls[0][0]).toBe(appId)
-        expect(mockDeleteVideo.mock.calls[0][1]).toBe(videoId)
+        expect(Service.deleteVideo.mock.calls.length).toBe(1)
+        expect(Service.deleteVideo.mock.calls[0][0]).toBe(appId)
+        expect(Service.deleteVideo.mock.calls[0][1]).toBe(videoId)
 
         return done()
       })
@@ -240,7 +219,7 @@ describe('uploadVideo', () => {
       data: sessionId
     }
 
-    mockUpload.mockReturnValue(sessionId)
+    Service.uploadVideo.mockReturnValue(sessionId)
 
     request(app)
       .post('/video/upload')
@@ -256,15 +235,14 @@ describe('uploadVideo', () => {
         expect(response.body).toEqual(responseBody)
 
         expect(appRestrictor.mock.calls.length).toBe(1)
-        expect(VideoService.mock.calls.length).toBe(1)
-        expect(mockUpload.mock.calls.length).toBe(1)
-        expect(mockUpload.mock.calls[0][0]).toBe(appId)
-        expect(mockUpload.mock.calls[0][1]).toBe('test_to_format')
-        expect(mockUpload.mock.calls[0][2]).toBe('test_with_subtitles')
-        expect(mockUpload.mock.calls[0][3]).toBe('test_language')
-        expect(mockUpload.mock.calls[0][4]).toBe('video_duration')
-        expect(mockUpload.mock.calls[0][5]).toBe('test_chapters')
-        expect(mockUpload.mock.calls[0][6]).toBeDefined()
+        expect(Service.uploadVideo.mock.calls.length).toBe(1)
+        expect(Service.uploadVideo.mock.calls[0][0]).toBe(appId)
+        expect(Service.uploadVideo.mock.calls[0][1]).toBe('test_to_format')
+        expect(Service.uploadVideo.mock.calls[0][2]).toBe('test_with_subtitles')
+        expect(Service.uploadVideo.mock.calls[0][3]).toBe('test_language')
+        expect(Service.uploadVideo.mock.calls[0][4]).toBe('video_duration')
+        expect(Service.uploadVideo.mock.calls[0][5]).toBe('test_chapters')
+        expect(Service.uploadVideo.mock.calls[0][6]).toBeDefined()
 
         return done()
       })
@@ -277,7 +255,7 @@ describe('uploadVideo', () => {
       data: 'test error'
     }
 
-    mockUpload.mockRejectedValue(new Error('test error'))
+    Service.uploadVideo.mockRejectedValue(new Error('test error'))
 
     request(app)
       .post('/video/upload')
@@ -293,15 +271,14 @@ describe('uploadVideo', () => {
         expect(response.body).toEqual(responseBody)
 
         expect(appRestrictor.mock.calls.length).toBe(1)
-        expect(VideoService.mock.calls.length).toBe(1)
-        expect(mockUpload.mock.calls.length).toBe(1)
-        expect(mockUpload.mock.calls[0][0]).toBe(appId)
-        expect(mockUpload.mock.calls[0][1]).toBe('test_to_format')
-        expect(mockUpload.mock.calls[0][2]).toBe('test_with_subtitles')
-        expect(mockUpload.mock.calls[0][3]).toBe('test_language')
-        expect(mockUpload.mock.calls[0][4]).toBe('video_duration')
-        expect(mockUpload.mock.calls[0][5]).toBe('test_chapters')
-        expect(mockUpload.mock.calls[0][6]).toBeDefined()
+        expect(Service.uploadVideo.mock.calls.length).toBe(1)
+        expect(Service.uploadVideo.mock.calls[0][0]).toBe(appId)
+        expect(Service.uploadVideo.mock.calls[0][1]).toBe('test_to_format')
+        expect(Service.uploadVideo.mock.calls[0][2]).toBe('test_with_subtitles')
+        expect(Service.uploadVideo.mock.calls[0][3]).toBe('test_language')
+        expect(Service.uploadVideo.mock.calls[0][4]).toBe('video_duration')
+        expect(Service.uploadVideo.mock.calls[0][5]).toBe('test_chapters')
+        expect(Service.uploadVideo.mock.calls[0][6]).toBeDefined()
 
         return done()
       })
@@ -321,10 +298,9 @@ describe('convert', () => {
       .expect(200)
       .then((response) => {
         expect(appRestrictor.mock.calls.length).toBe(1)
-        expect(VideoService.mock.calls.length).toBe(1)
-        expect(mockConvertFile.mock.calls.length).toBe(1)
-        expect(mockConvertFile.mock.calls[0][0]).toBe(id)
-        expect(mockConvertFile.mock.calls[0][1]).toBeDefined()
+        expect(Service.convertFile.mock.calls.length).toBe(1)
+        expect(Service.convertFile.mock.calls[0][0]).toBe(id)
+        expect(Service.convertFile.mock.calls[0][1]).toBeDefined()
 
         return done()
       })
@@ -335,7 +311,7 @@ describe('convert', () => {
     const id = 'test_id'
     const appId = 'test_id'
 
-    mockConvertFile.mockRejectedValue(new Error('test error'))
+    Service.convertFile.mockRejectedValue(new Error('test error'))
 
     request(app)
       .get('/video/convert/test_id')
@@ -344,10 +320,9 @@ describe('convert', () => {
       .expect(200)
       .then((response) => {
         expect(appRestrictor.mock.calls.length).toBe(1)
-        expect(VideoService.mock.calls.length).toBe(1)
-        expect(mockConvertFile.mock.calls.length).toBe(1)
-        expect(mockConvertFile.mock.calls[0][0]).toBe(id)
-        expect(mockConvertFile.mock.calls[0][1]).toBeDefined()
+        expect(Service.convertFile.mock.calls.length).toBe(1)
+        expect(Service.convertFile.mock.calls[0][0]).toBe(id)
+        expect(Service.convertFile.mock.calls[0][1]).toBeDefined()
 
         return done()
       })
@@ -367,10 +342,9 @@ describe('addSubtitles', () => {
       .expect(200)
       .then((response) => {
         expect(appRestrictor.mock.calls.length).toBe(1)
-        expect(VideoService.mock.calls.length).toBe(1)
-        expect(mockAddSubtitles.mock.calls.length).toBe(1)
-        expect(mockAddSubtitles.mock.calls[0][0]).toBe(id)
-        expect(mockAddSubtitles.mock.calls[0][1]).toBeDefined()
+        expect(Service.addSubtitles.mock.calls.length).toBe(1)
+        expect(Service.addSubtitles.mock.calls[0][0]).toBe(id)
+        expect(Service.addSubtitles.mock.calls[0][1]).toBeDefined()
 
         return done()
       })
@@ -381,7 +355,7 @@ describe('addSubtitles', () => {
     const id = 'test_id'
     const appId = 'test_id'
 
-    mockAddSubtitles.mockRejectedValue(new Error('test error'))
+    Service.addSubtitles.mockRejectedValue(new Error('test error'))
 
     request(app)
       .get('/video/createSubtitles/test_id')
@@ -390,10 +364,9 @@ describe('addSubtitles', () => {
       .expect(200)
       .then((response) => {
         expect(appRestrictor.mock.calls.length).toBe(1)
-        expect(VideoService.mock.calls.length).toBe(1)
-        expect(mockAddSubtitles.mock.calls.length).toBe(1)
-        expect(mockAddSubtitles.mock.calls[0][0]).toBe(id)
-        expect(mockAddSubtitles.mock.calls[0][1]).toBeDefined()
+        expect(Service.addSubtitles.mock.calls.length).toBe(1)
+        expect(Service.addSubtitles.mock.calls[0][0]).toBe(id)
+        expect(Service.addSubtitles.mock.calls[0][1]).toBeDefined()
 
         return done()
       })
