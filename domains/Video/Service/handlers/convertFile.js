@@ -29,6 +29,8 @@ const convertFile = async (id, res) => {
   try {
     ffmpeg.setFfmpegPath('/usr/bin/ffmpeg')
     ffmpeg.setFfprobePath('/usr/bin/ffprobe')
+    // ffmpeg.setFfmpegPath('D:\\FFMPEG\\bin\\ffmpeg.exe')
+    // ffmpeg.setFfprobePath('D:\\FFMPEG\\bin\\ffprobe.exe')
 
     // Moving uploaded file to processing folder
     fileService.moveFileToAnotherFolder(FOLDERS.UPLOAD_DIRECTORY)

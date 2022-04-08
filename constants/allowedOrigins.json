@@ -1,5 +1,9 @@
 {
   "allowed_origins": [
+    "htpps://foi-admin-app-dev.web.app",
+    "https://foi-admin-app-prod.web.app",
+    "https://admin.foihelse.com",
+    "https://admin.bymenta.com",  
     "https://foi-therapist-app-dev.web.app",
     "https://foi-therapist-app-prod.web.app",
     "https://therapist.foihelse.com",
