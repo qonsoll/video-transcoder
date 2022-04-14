@@ -6,26 +6,44 @@ const Service = require('../../Service')
  */
 const uploadVideo = async (req, res) => {
   // toFormat, withSubtitles - are required body fields
-  const { toFormat, withSubtitles, language, videoDuration, chapters } =
-    JSON.parse(req.body.uploadProps)
+  const {
+    toFormat,
+    withSubtitles,
+    language,
+    videoDuration,
+    chapters,
+    notToBeConverted
+  } = JSON.parse(req.body.uploadProps)
   // file - is required to be in request files array
   const file = req.files.data
   // appId - is required to be in request header
   const appId = req.headers.appid
 
   try {
-    const sessionId = await Service.uploadVideo(
-      appId,
-      toFormat,
-      withSubtitles,
-      language,
-      videoDuration,
-      chapters,
-      file
-    )
+    if (notToBeConverted) {
+      const videoToken = await Service.uploadWithoutConvert(
+        file,
+        appId,
+        toFormat,
+        chapters,
+        withSubtitles,
+        videoDuration
+      )
+      res.status(200).send({ data: videoToken })
+    } else {
+      const sessionId = await Service.uploadVideo(
+        appId,
+        toFormat,
+        withSubtitles,
+        language,
+        videoDuration,
+        chapters,
+        file
+      )
 
-    // Sending successful response
-    res.status(200).send({ data: sessionId })
+      // Sending successful response
+      res.status(200).send({ data: sessionId })
+    }
   } catch (err) {
     const message = err.message
     res.status(500).send({ data: message })
