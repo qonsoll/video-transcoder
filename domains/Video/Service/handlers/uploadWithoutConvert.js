@@ -30,10 +30,10 @@ const uploadWithoutConvert = async (
   ).data()
   const appName = appData.name
 
-  // ffmpeg.setFfmpegPath('/usr/bin/ffmpeg')
-  // ffmpeg.setFfprobePath('/usr/bin/ffprobe')
-  ffmpeg.setFfmpegPath('D:\\FFMPEG\\bin\\ffmpeg.exe')
-  ffmpeg.setFfprobePath('D:\\FFMPEG\\bin\\ffprobe.exe')
+  ffmpeg.setFfmpegPath('/usr/bin/ffmpeg')
+  ffmpeg.setFfprobePath('/usr/bin/ffprobe')
+  //   ffmpeg.setFfmpegPath('D:\\FFMPEG\\bin\\ffmpeg.exe')
+  //   ffmpeg.setFfprobePath('D:\\FFMPEG\\bin\\ffprobe.exe')
   getPosterImage(
     ffmpeg,
     FOLDERS.UPLOAD_DIRECTORY,
