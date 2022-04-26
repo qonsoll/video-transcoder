@@ -1,6 +1,6 @@
 {
   "allowed_origins": [
-    "htpps://foi-admin-app-dev.web.app",
+    "https://foi-admin-app-dev.web.app",
     "https://foi-admin-app-prod.web.app",
     "https://admin.foihelse.com",
     "https://admin.bymenta.com",  
