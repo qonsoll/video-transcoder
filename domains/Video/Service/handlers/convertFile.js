@@ -10,6 +10,7 @@ const Handlers = require('../../handlers')
 const getPosterImage = require('./getPosterImage')
 const convert = require('./convert')
 const clearTemporaryFiles = require('./clearTemporaryFiles')
+const getSeveralPosters = require('./getSeveralPosters')
 
 const convertFile = async (id, res) => {
   // Extracting request data from storage for this session
@@ -34,12 +35,16 @@ const convertFile = async (id, res) => {
 
     // Moving uploaded file to processing folder
     fileService.moveFileToAnotherFolder(FOLDERS.UPLOAD_DIRECTORY)
-    getPosterImage(
+
+    // Generating posters
+    getSeveralPosters(
       ffmpeg,
       FOLDERS.UPLOAD_DIRECTORY,
       FOLDERS.POSTERS_DIRECTORY,
-      file
+      file,
+      videoDuration
     )
+
     // Converting video using request data
     convert(
       ffmpeg,
