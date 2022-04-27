@@ -35,12 +35,8 @@ const convertFile = async (id, res) => {
 
     // Moving uploaded file to processing folder
     fileService.moveFileToAnotherFolder(FOLDERS.UPLOAD_DIRECTORY)
-    // getPosterImage(
-    //   ffmpeg,
-    //   FOLDERS.UPLOAD_DIRECTORY,
-    //   FOLDERS.POSTERS_DIRECTORY,
-    //   file
-    // )
+
+    // Generating posters
     getSeveralPosters(
       ffmpeg,
       FOLDERS.UPLOAD_DIRECTORY,
@@ -48,6 +44,7 @@ const convertFile = async (id, res) => {
       file,
       videoDuration
     )
+
     // Converting video using request data
     convert(
       ffmpeg,
