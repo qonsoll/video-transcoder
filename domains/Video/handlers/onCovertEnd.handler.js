@@ -1,5 +1,6 @@
 const { COLLECTIONS, FOLDERS } = require('../../../constants')
 const { Storage } = require('../../ServerStorage')
+const uploadSeveralPosters = require('../Service/handlers/uploadSeveralPosters')
 const createGeneralVideoStatisticEntry = require('./createGeneralVideoStatisticEntry')
 
 module.exports = (response, fileService, dbService, storageItem, sessionId) => {
@@ -23,20 +24,14 @@ module.exports = (response, fileService, dbService, storageItem, sessionId) => {
         }
       )
     ).link
-    const posterLink = (
-      await fileService.uploadFileToStorage(
-        FOLDERS.POSTERS_DIRECTORY,
-        `${file.name}-poster.png`,
-        {
-          destination: `${appName}_${appId}/posters/${file.name}-poster.png`
-        }
-      )
-    ).link
 
-    await fileService.deleteFileFromFolder(
-      FOLDERS.POSTERS_DIRECTORY,
-      `${file.name}-poster.png`
+    const posterLinksAndPaths = await uploadSeveralPosters(
+      file.name,
+      fileService,
+      appName,
+      appId
     )
+
     // Adding metadata about video to database collection
     const newDoc = await dbService.createDocument(
       COLLECTIONS.VIDEOS,
@@ -45,8 +40,10 @@ module.exports = (response, fileService, dbService, storageItem, sessionId) => {
         chapters,
         link,
         withSubtitles,
-        posterLink,
-        posterPath: `${appName}_${appId}/posters/${file.name}-poster.png`,
+        posterLink: posterLinksAndPaths[0].link,
+        posterPath: posterLinksAndPaths[0].path,
+        // posterLink,
+        // posterPath: `${appName}_${appId}/posters/${file.name}-poster.png`,
         path: `${appName}_${appId}/videos/${file.name}.${toFormat}`,
         filename: `${file.name}.${toFormat}`,
         format: `video/${toFormat}`
@@ -72,7 +69,12 @@ module.exports = (response, fileService, dbService, storageItem, sessionId) => {
         videoId: newDoc
       })
     // Sending video link to client and closing SSE channel
-    response.write(`event: videoId\ndata: ${newDoc}\n\n`)
+    response.write(
+      `event: videoId\ndata: ${JSON.stringify({
+        videoId: newDoc,
+        posters: posterLinksAndPaths
+      })}\n\n`
+    )
     response.end()
     // Deleting files from local folders
     if (!withSubtitles) {

@@ -5,6 +5,8 @@ const getVideos = require('./getVideos')
 const convertFile = require('./convertFile')
 const addSubtitles = require('./addSubtitles')
 const uploadWithoutConvert = require('./uploadWithoutConvert')
+const uploadSeveralPosters = require('./uploadSeveralPosters')
+const getSeveralPosters = require('./getSeveralPosters')
 
 module.exports = {
   uploadVideo,
@@ -13,5 +15,7 @@ module.exports = {
   getVideos,
   convertFile,
   addSubtitles,
-  uploadWithoutConvert
+  uploadWithoutConvert,
+  uploadSeveralPosters,
+  getSeveralPosters
 }
