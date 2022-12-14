@@ -2,7 +2,7 @@ const { FOLDERS } = require('../../../../constants')
 const { DatabaseService } = require('../../../Database')
 const { Storage } = require('../../../ServerStorage')
 const { FileService } = require('../../../File')
-const Handlers = require('../../handlers')
+const onSubtitlesCreationEnd = require('../../handlers/onSubtitlesCreationEnd.handler')
 
 const getAudio = require('./getAudio')
 const clearTemporaryFiles = require('./clearTemporaryFiles')
@@ -36,7 +36,7 @@ const addSubtitles = async (id, res) => {
       // On audio extraction process end
       .on(
         'end',
-        Handlers.onSubtitlesCreationEndHandler(
+        onSubtitlesCreationEnd(
           res,
           fileService,
           dbService,

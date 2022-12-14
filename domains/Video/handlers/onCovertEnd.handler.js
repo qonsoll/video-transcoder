@@ -1,6 +1,7 @@
 const { COLLECTIONS, FOLDERS } = require('../../../constants')
 const { Storage } = require('../../ServerStorage')
 const createGeneralVideoStatisticEntry = require('./createGeneralVideoStatisticEntry')
+const addSubtitles = require('../Service/handlers/addSubtitles')
 
 module.exports = (response, fileService, dbService, storageItem, sessionId) => {
   return async (stdout, stderr) => {
@@ -71,12 +72,17 @@ module.exports = (response, fileService, dbService, storageItem, sessionId) => {
         appId,
         videoId: newDoc
       })
-    // Sending video link to client and closing SSE channel
+
+    // Sending video link to client
     response.write(`event: videoId\ndata: ${newDoc}\n\n`)
-    response.end()
+
     // Deleting files from local folders
     if (!withSubtitles) {
+      // closing SSE channel
+      response.end()
       await fileService.deleteFileFromFolder(FOLDERS.UPLOAD_DIRECTORY)
+    } else {
+      await addSubtitles(sessionId, response)
     }
     await fileService.deleteFileFromFolder(
       FOLDERS.RESULT_DIRECTORY,
