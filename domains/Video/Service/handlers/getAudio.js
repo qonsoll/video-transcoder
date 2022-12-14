@@ -10,10 +10,10 @@ const ffmpeg = require('fluent-ffmpeg')
  * @returns {ffmpeg.FfmpegCommand} result of ffmpeg command
  */
 const getAudio = (sourceFolderPath, processedFolderPath, file) => {
-  // ffmpeg.setFfmpegPath('/usr/bin/ffmpeg')
-  // ffmpeg.setFfprobePath('/usr/bin/ffprobe')
-  ffmpeg.setFfmpegPath('D:\\FFMPEG\\bin\\ffmpeg.exe')
-  ffmpeg.setFfprobePath('D:\\FFMPEG\\bin\\ffprobe.exe')
+  ffmpeg.setFfmpegPath('/usr/bin/ffmpeg')
+  ffmpeg.setFfprobePath('/usr/bin/ffprobe')
+  // ffmpeg.setFfmpegPath('D:\\FFMPEG\\bin\\ffmpeg.exe')
+  // ffmpeg.setFfprobePath('D:\\FFMPEG\\bin\\ffprobe.exe')
 
   return ffmpeg(`${sourceFolderPath}${file.name}`)
     .outputOptions([
